@@ -3,6 +3,8 @@ package ca.concordia.apr.invsdiff;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.json.JSONObject;
+
 public class Ppt {
 	private Set<String> invs = new HashSet<String>();
 	private String name;
@@ -39,6 +41,13 @@ public class Ppt {
 			sb.append(inv).append('\n');
 		}
 		return sb.toString();
+	}
+	public JSONObject toJSON() {
+		JSONObject pptJson = new JSONObject();
+		pptJson.put("name", this.name);
+		pptJson.put("invs", this.invs);
+		
+		return pptJson;
 	}
 	public boolean isEmpty() {
 		return this.invs.isEmpty();

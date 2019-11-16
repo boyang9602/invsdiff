@@ -12,14 +12,27 @@ public class App
     public static void main( String[] args ) throws FileNotFoundException, IOException
     {
     	if (args.length < 2) {
-    		System.out.println("Usage: \n - ca.concordia.apr.invsdiff.App invsfile0 invsfile1 invsfile2 ...");
+    		System.out.println("Usage: \n - ca.concordia.apr.invsdiff.App [options] invsfile0 invsfile1 invsfile2 ... \n - options: \n\t --format=[format] output file format. json or txt. default is json");
     		System.exit(1);
     	}
-    	InvsFile base = new InvsFile(args[0]);
-        for (int i = 1; i < args.length; i++) {
+    	int i = 0;
+    	String outputFormat = ".json";
+    	if (args[i].startsWith("--format=")) {
+    		String format = args[i].substring(args[i].indexOf("=") + 1);
+    		if (format.equals("txt")) {
+    			outputFormat = ".txt";
+    		}
+    		i++;
+    	}
+    	InvsFile base = new InvsFile(args[i++]);
+        for (int j = 0; i < args.length; i++, j++) {
         	InvsFile toBeCompared = new InvsFile(args[i]);
         	Diff diff = Diff.compare(base, toBeCompared);
-        	diff.writeTo("diff" + i + ".txt");
+        	if (outputFormat.equals(".txt")) {
+            	diff.writeTxtTo("diff" + (j + 1) + ".txt");
+        	} else {
+        		diff.writeJSONTo("diff" + (j + 1) + ".json");
+        	}
         }
     }
 }

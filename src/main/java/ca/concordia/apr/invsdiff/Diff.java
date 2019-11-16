@@ -8,6 +8,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 public class Diff {
 	String leftName;
 	String rightName;
@@ -45,31 +48,64 @@ public class Diff {
 		return diff;
 	}
 	
-	public void writeTo(String filename) throws IOException {
+	public void writeTo(String filename, String content) throws IOException {
 		PrintWriter writer = new PrintWriter(filename);
+		writer.write(content);
+		writer.close();
+	}
+	
+	public void writeTxtTo(String filename) throws IOException {
+		StringBuffer sb = new StringBuffer();
 		Iterator<Ppt> itLeft = this.onlyLeftInvs.iterator();
 		Iterator<Ppt> itRight = this.onlyRightInvs.iterator();
-		writer.write("Following are different invs in common Ppt:\n");
+		sb.append("Following are different invs in common Ppt:\n");
 		while(itLeft.hasNext()) {
-			writer.write("===========================================================================\n");
+			sb.append("===========================================================================\n");
 			Ppt lPpt = itLeft.next();
 			Ppt rPpt = itRight.next();
-			writer.write(lPpt.getName() + "\n");
-			writer.write("extra invs at left:\n");
-			writer.write(lPpt.toString(false));
-			writer.write("extra invs at right:\n");
-			writer.write(rPpt.toString(false));
+			sb.append(lPpt.getName() + "\n");
+			sb.append("extra invs at left:\n");
+			sb.append(lPpt.toString(false));
+			sb.append("extra invs at right:\n");
+			sb.append(rPpt.toString(false));
 		}
-		writer.write("\n\n\nFollowing Ppts only exist in " + this.leftName + ":\n");
+		sb.append("\n\n\nFollowing Ppts only exist in " + this.leftName + ":\n");
 		for (Ppt ppt : this.onlyLeftPpts) {
-			writer.write("===========================================================================\n");
-			writer.write(ppt.toString());
+			sb.append("===========================================================================\n");
+			sb.append(ppt.toString());
 		}
-		writer.write("\n\n\nFollowing Ppts only exist in " + this.rightName + ":\n");
+		sb.append("\n\n\nFollowing Ppts only exist in " + this.rightName + ":\n");
 		for (Ppt ppt : this.onlyRightPpts) {
-			writer.write("===========================================================================\n");
-			writer.write(ppt.toString());
+			sb.append("===========================================================================\n");
+			sb.append(ppt.toString());
 		}
-		writer.close();
+		writeTo(filename, sb.toString());
+	}
+	
+	public void writeJSONTo(String filename) throws IOException {
+		JSONObject outputJson = new JSONObject();
+		JSONArray commonPptsArray = new JSONArray();
+		Iterator<Ppt> itLeft = this.onlyLeftInvs.iterator();
+		Iterator<Ppt> itRight = this.onlyRightInvs.iterator();
+		while(itLeft.hasNext()) {
+			Ppt lPpt = itLeft.next();
+			Ppt rPpt = itRight.next();
+			JSONObject commonPpt = new JSONObject();
+			commonPpt.put("left", lPpt.toJSON());
+			commonPpt.put("right", rPpt.toJSON());
+			commonPptsArray.put(commonPpt);
+		}
+		outputJson.put("commonPpts", commonPptsArray);
+		JSONArray leftPptsArray = new JSONArray();
+		for (Ppt ppt : this.onlyLeftPpts) {
+			leftPptsArray.put(ppt.toJSON());
+		}
+		outputJson.put("leftPpts", leftPptsArray);
+		JSONArray rightPptsArray = new JSONArray();
+		for (Ppt ppt : this.onlyLeftPpts) {
+			rightPptsArray.put(ppt.toJSON());
+		}
+		outputJson.put("rightPpts", rightPptsArray);
+		writeTo(filename, outputJson.toString());
 	}
 }
