@@ -91,8 +91,9 @@ public class Diff {
 			Ppt lPpt = itLeft.next();
 			Ppt rPpt = itRight.next();
 			JSONObject commonPpt = new JSONObject();
-			commonPpt.put("left", lPpt.toJSON());
-			commonPpt.put("right", rPpt.toJSON());
+			commonPpt.put("left", lPpt.toJSON(false));
+			commonPpt.put("right", rPpt.toJSON(false));
+			commonPpt.put("name", lPpt.getName());
 			commonPptsArray.put(commonPpt);
 		}
 		outputJson.put("commonPpts", commonPptsArray);
@@ -102,7 +103,7 @@ public class Diff {
 		}
 		outputJson.put("leftPpts", leftPptsArray);
 		JSONArray rightPptsArray = new JSONArray();
-		for (Ppt ppt : this.onlyLeftPpts) {
+		for (Ppt ppt : this.onlyRightPpts) {
 			rightPptsArray.put(ppt.toJSON());
 		}
 		outputJson.put("rightPpts", rightPptsArray);

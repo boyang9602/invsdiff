@@ -43,8 +43,13 @@ public class Ppt {
 		return sb.toString();
 	}
 	public JSONObject toJSON() {
+		return this.toJSON(true);
+	}
+	public JSONObject toJSON(boolean withName) {
 		JSONObject pptJson = new JSONObject();
-		pptJson.put("name", this.name);
+		if (withName) {
+			pptJson.put("name", this.name);
+		}
 		pptJson.put("invs", this.invs);
 		
 		return pptJson;
