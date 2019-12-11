@@ -21,6 +21,10 @@ public class Diff {
 	List<Ppt> onlyRightInvs = new LinkedList<Ppt>();
 	
 	public static Diff compare(InvsFile if1, InvsFile if2) {
+		return compare(if1, if2, false);
+	}
+	
+	public static Diff compare(InvsFile if1, InvsFile if2, boolean multiple) {
 		Diff diff = new Diff();
 		diff.leftName = if1.getFilename();
 		diff.rightName = if2.getFilename();
