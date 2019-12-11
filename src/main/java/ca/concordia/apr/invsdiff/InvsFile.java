@@ -9,7 +9,6 @@ import java.util.Map;
 
 public class InvsFile {
 	private String filename;
-
 	private Map<String, Ppt> ppts = new HashMap<String, Ppt>();
 
 	public final Map<String, Ppt> getPpts() {
@@ -26,7 +25,7 @@ public class InvsFile {
 		String line = br.readLine();
 		
 		Ppt currPpt = new Ppt();
-		if (line.matches("=*")) {
+		if (line.matches("=+")) {
 			line = br.readLine();
 			currPpt.setName(line);
 			line = br.readLine();
@@ -35,8 +34,8 @@ public class InvsFile {
 			throw new RuntimeException("invalid invs file");
 		}
 		while (line != null) {
-			if (line.matches("=*")) {
-				this.ppts.put(currPpt.getName(), currPpt);
+			if (line.matches("=+")) {
+				this.ppts.put(currPpt.getRawName(), currPpt);
 				currPpt = new Ppt();
 				line = br.readLine();
 				currPpt.setName(line);
@@ -45,7 +44,7 @@ public class InvsFile {
 			}
 			line = br.readLine();
 		}
-		this.ppts.put(currPpt.getName(), currPpt);
+		this.ppts.put(currPpt.getRawName(), currPpt);
 		br.close();
 	}
 }

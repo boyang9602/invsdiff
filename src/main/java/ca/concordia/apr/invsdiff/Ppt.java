@@ -66,7 +66,7 @@ public class Ppt {
 	public Ppt diff(Ppt ppt) {
 		Set<String> copy = new HashSet<String>(this.invs);
 		copy.removeAll(ppt.getInvs());
-		return new Ppt(this.name, copy);
+		return new Ppt(this.rawName, copy);
 	}
 	public JSONObject toJSON() {
 		return this.toJSON(true);
@@ -74,7 +74,7 @@ public class Ppt {
 	public JSONObject toJSON(boolean withName) {
 		JSONObject pptJson = new JSONObject();
 		if (withName) {
-			pptJson.put("name", this.name);
+			pptJson.put("name", this.rawName);
 		}
 		pptJson.put("invs", this.invs);
 		
