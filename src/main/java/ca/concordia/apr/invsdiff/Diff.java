@@ -54,34 +54,6 @@ public class Diff {
 		writer.close();
 	}
 	
-	public void writeTxtTo(String filename) throws IOException {
-		StringBuffer sb = new StringBuffer();
-		Iterator<Ppt> itLeft = this.onlyLeftInvs.iterator();
-		Iterator<Ppt> itRight = this.onlyRightInvs.iterator();
-		sb.append("Following are different invs in common Ppt:\n");
-		while(itLeft.hasNext()) {
-			sb.append("===========================================================================\n");
-			Ppt lPpt = itLeft.next();
-			Ppt rPpt = itRight.next();
-			sb.append(lPpt.getName() + "\n");
-			sb.append("extra invs at left:\n");
-			sb.append(lPpt.toString(false));
-			sb.append("extra invs at right:\n");
-			sb.append(rPpt.toString(false));
-		}
-		sb.append("\n\n\nFollowing Ppts only exist in " + this.leftName + ":\n");
-		for (Ppt ppt : this.onlyLeftPpts) {
-			sb.append("===========================================================================\n");
-			sb.append(ppt.toString());
-		}
-		sb.append("\n\n\nFollowing Ppts only exist in " + this.rightName + ":\n");
-		for (Ppt ppt : this.onlyRightPpts) {
-			sb.append("===========================================================================\n");
-			sb.append(ppt.toString());
-		}
-		writeTo(filename, sb.toString());
-	}
-	
 	public void writeJSONTo(String filename) throws IOException {
 		JSONObject outputJson = new JSONObject();
 		JSONArray commonPptsArray = new JSONArray();
