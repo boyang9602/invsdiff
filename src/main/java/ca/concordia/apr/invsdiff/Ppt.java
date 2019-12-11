@@ -23,12 +23,15 @@ public class Ppt {
 	private int exitPoint = -1;
 	public Ppt() {
 	}
-	public Ppt(String name, Set<String> invs) {
-		this.rawName = name;
-		Matcher m = namePattern.matcher(name);
-		this.name = m.group(1);
+	public Ppt(String rawName, Set<String> invs) {
+		this.rawName = rawName;
 		this.invs = invs;
+		this.parseRawName();
+	}
+	private void parseRawName() {
+		Matcher m = namePattern.matcher(rawName);
 		if (m.matches()) {
+			this.name = m.group(1);
 			this.type = Enum.valueOf(PPT_TYPE.class, m.group(2));
 			if (this.type == PPT_TYPE.EXIT) {
 				if (!m.group(3).equals("")) {
@@ -37,7 +40,7 @@ public class Ppt {
 				}
 			} else {
 				if (!m.group(3).equals("")) {
-					throw new RuntimeException("unexpected ppt: " + name);
+					throw new RuntimeException("unexpected ppt: " + rawName);
 				}
 			}
 		}
@@ -45,11 +48,12 @@ public class Ppt {
 	public final String getRawName() {
 		return rawName;
 	}
+	public void setRawName(String rawName) {
+		this.rawName = rawName;
+		this.parseRawName();
+	}
 	public String getName() {
 		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
 	}
 	public void addInv(String inv) {
 		this.invs.add(inv);
