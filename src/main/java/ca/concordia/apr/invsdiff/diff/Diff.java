@@ -1,7 +1,6 @@
 package ca.concordia.apr.invsdiff.diff;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -13,6 +12,7 @@ import org.json.JSONObject;
 
 import ca.concordia.apr.invsdiff.InvsFile;
 import ca.concordia.apr.invsdiff.Ppt;
+import ca.concordia.apr.invsdiff.utils.FileUtils;
 
 public class Diff {
 	String leftName;
@@ -51,12 +51,6 @@ public class Diff {
 		return diff;
 	}
 	
-	public void writeTo(String filename, String content) throws IOException {
-		PrintWriter writer = new PrintWriter(filename);
-		writer.write(content);
-		writer.close();
-	}
-	
 	public void writeJSONTo(String filename) throws IOException {
 		JSONObject outputJson = new JSONObject();
 		JSONArray commonPptsArray = new JSONArray();
@@ -82,6 +76,6 @@ public class Diff {
 			rightPptsArray.put(ppt.toJSON());
 		}
 		outputJson.put("rightPpts", rightPptsArray);
-		writeTo(filename, outputJson.toString());
+		FileUtils.writeTo(filename, outputJson.toString());
 	}
 }
