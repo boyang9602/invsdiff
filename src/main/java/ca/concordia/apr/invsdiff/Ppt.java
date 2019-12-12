@@ -87,7 +87,14 @@ public class Ppt {
 	public JSONObject toJSON(boolean withName) {
 		JSONObject pptJson = new JSONObject();
 		if (withName) {
-			pptJson.put("name", this.rawName);
+			pptJson.put("name", this.name);
+			pptJson.put("type", this.type);
+			if (this.type == PPT_TYPE.EXITNN) {
+				pptJson.put("exitpoint", this.exitPoint);
+			}
+			if (this.condition != null) {
+				pptJson.put("condition", this.condition.substring(1));
+			}
 		}
 		pptJson.put("invs", this.invs);
 		
