@@ -1,4 +1,4 @@
-package ca.concordia.apr.invsdiff.diff;
+package ca.concordia.apr.invsdiff;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -14,11 +14,9 @@ import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import ca.concordia.apr.invsdiff.InvsFile;
-import ca.concordia.apr.invsdiff.Ppt;
 import ca.concordia.apr.invsdiff.utils.FileUtils;
 
-public class DiffByType {
+public class Diff {
 	private InvsFile if1;
 	private InvsFile if2;
 
@@ -40,7 +38,7 @@ public class DiffByType {
 	private Map<String, List<Ppt>> methodInvOnly1 = new HashMap<String, List<Ppt>>();
 	private Map<String, List<Ppt>> methodInvOnly2 = new HashMap<String, List<Ppt>>();
 
-	public DiffByType(InvsFile if1, InvsFile if2) {
+	public Diff(InvsFile if1, InvsFile if2) {
 		this.if1 = if1;
 		this.if2 = if2;
 	}
