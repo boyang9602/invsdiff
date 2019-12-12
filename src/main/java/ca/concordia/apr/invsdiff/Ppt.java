@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 import org.json.JSONObject;
 
 public class Ppt {
-	public static Pattern namePattern = Pattern.compile("^(.*):::([A-Z]+)(\\d*)$");
+	public static Pattern namePattern = Pattern.compile("^(.*):::([A-Z]+)(\\d+){0,1}(;condition.*){0,1}$");
 	public enum PPT_TYPE {
 		CLASS,
 		OBJECT,
@@ -21,6 +21,7 @@ public class Ppt {
 	private String name;
 	private PPT_TYPE type;
 	private int exitPoint = -1;
+	private String condition = null;
 	public Ppt() {
 	}
 	public Ppt(String rawName, Set<String> invs) {
@@ -34,15 +35,20 @@ public class Ppt {
 			this.name = m.group(1);
 			this.type = Enum.valueOf(PPT_TYPE.class, m.group(2));
 			if (this.type == PPT_TYPE.EXIT) {
-				if (!m.group(3).equals("")) {
+				if (m.group(3) != null) {
 					this.type = PPT_TYPE.EXITNN;
 					this.exitPoint = Integer.parseInt(m.group(3));
 				}
+				if (m.group(4) != null) {
+					this.condition = m.group(4);
+				}
 			} else {
-				if (!m.group(3).equals("")) {
+				if (m.group(3) != null) {
 					throw new RuntimeException("unexpected ppt: " + rawName);
 				}
 			}
+		} else {
+			throw new RuntimeException("unexpected ppt: " + rawName);
 		}
 	}
 	public final String getRawName() {
@@ -66,6 +72,9 @@ public class Ppt {
 	}
 	public final int getExitPoint() {
 		return exitPoint;
+	}
+	public final String getCondition() {
+		return condition;
 	}
 	public Ppt diff(Ppt ppt) {
 		Set<String> copy = new HashSet<String>(this.invs);
