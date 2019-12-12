@@ -252,9 +252,9 @@ public class DiffByType {
 			List<Ppt> ppts1 = methodInvOnly1.get(method);
 			List<Ppt> ppts2 = methodInvOnly2.get(method);
 			JSONObject invDiff = new JSONObject();
-			invDiff.append("name", method);
-			invDiff.append(if1.getFilename(), pptListToJSONArray(ppts1));
-			invDiff.append(if2.getFilename(), pptListToJSONArray(ppts2));
+			invDiff.put("name", method);
+			invDiff.put(if1.getFilename(), pptListToJSONArray(ppts1));
+			invDiff.put(if2.getFilename(), pptListToJSONArray(ppts2));
 			FileUtils.writeTo(folderName + "/commonPpts/" + method, invDiff.toString());
 		}
 	}
@@ -275,9 +275,9 @@ public class DiffByType {
 			JSONObject invDiff = new JSONObject();
 			Ppt p1 = it1.next();
 			Ppt p2 = it2.next();
-			invDiff.append("name", p1.getRawName());
-			invDiff.append(filename1, p1.toJSON(false));
-			invDiff.append(filename2, p2.toJSON(false));
+			invDiff.put("name", p1.getRawName());
+			invDiff.put(filename1, p1.toJSON(false));
+			invDiff.put(filename2, p2.toJSON(false));
 			FileUtils.writeTo(folderName + "/commonPpts/" + p1.getRawName(), invDiff.toString());
 		}
 	}
