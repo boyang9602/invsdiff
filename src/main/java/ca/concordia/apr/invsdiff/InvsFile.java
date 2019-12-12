@@ -44,7 +44,7 @@ public class InvsFile {
 	}
 
 	public final String getFilename() {
-		return filename;
+		return filename.substring(filename.lastIndexOf('/') + 1);
 	}
 
 	public InvsFile(String filename) throws FileNotFoundException, IOException {

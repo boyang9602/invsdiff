@@ -37,7 +37,7 @@ public class DiffByType {
 
 	private Map<String, List<Ppt>> methodInvOnly1 = new HashMap<String, List<Ppt>>();
 	private Map<String, List<Ppt>> methodInvOnly2 = new HashMap<String, List<Ppt>>();
-	
+
 	public DiffByType (InvsFile if1, InvsFile if2) {
 		this.if1 = if1;
 		this.if2 = if2;
@@ -56,7 +56,7 @@ public class DiffByType {
 	private void compareObject() {
 		compare(if1.getObjectPpts(), if2.getObjectPpts(), objectPptOnly1, objectPptOnly2, objectInvOnly1, objectInvOnly2);
 	}
-	
+
 	private void compareMethod() {
 		Map<String, Ppt> mEnter1 = if1.getEnterPpts();
 		Map<String, Ppt> mExit1 = if1.getExitPpts();
@@ -66,9 +66,9 @@ public class DiffByType {
 		Map<String, Ppt> mExit2 = if1.getExitPpts();
 		Map<String, List<Ppt>> mExitnn2 = if1.getExitnnPpts();
 		
-		Set<String> mEntrySet1 = mEnter1.keySet();
-		mEntrySet1.removeAll(mEnter2.keySet());
-		Set<String> commonMethods = new HashSet<String>(mEntrySet1);
+		Set<String> mEntrySet1 = new HashSet<String>(mEnter1.keySet());
+		mEntrySet1.retainAll(mEnter2.keySet());
+		Set<String> commonMethods = mEntrySet1;
 		for (String method : commonMethods) {
 			Ppt enterPpt12 = mEnter1.get(method).diff(mEnter2.get(method));
 			Ppt enterPpt21 = mEnter2.get(method).diff(mEnter1.get(method));
@@ -78,8 +78,10 @@ public class DiffByType {
 
 			List<Ppt> lenn1 = new LinkedList<Ppt>();
 			List<Ppt> lenn2 = new LinkedList<Ppt>();
-			Iterator<Ppt> it1 = mExitnn1.get(method).iterator();
-			Iterator<Ppt> it2 = mExitnn2.get(method).iterator();
+			List<Ppt> olenn1 = new LinkedList<Ppt>(mExitnn1.get(method));
+			List<Ppt> olenn2 = new LinkedList<Ppt>(mExitnn2.get(method));
+			Iterator<Ppt> it1 = olenn1.iterator();
+			Iterator<Ppt> it2 = olenn2.iterator();
 			while(it1.hasNext()) {
 				Ppt p1 = it1.next();
 				boolean found = false;
@@ -98,25 +100,11 @@ public class DiffByType {
 					lenn1.add(p1);
 				}
 			}
-			lenn2.addAll(mExitnn2.get(method));
-			
-			boolean allEmpty = true;
-			for (Ppt p1 : lenn1) {
-				if(!p1.isEmpty()) {
-					allEmpty = false;
-				}
-			}
-			if (allEmpty) {
-				for (Ppt p2 : lenn2) {
-					if(!p2.isEmpty()) {
-						allEmpty = false;
-					}
-				}
-			}
+			lenn2.addAll(olenn2);
 
 			if (enterPpt12.isEmpty() && enterPpt21.isEmpty() 
 					&& exitPpt12.isEmpty() && exitPpt21.isEmpty() 
-					&& allEmpty) {
+					&& checkAllEmpty(lenn1, lenn2)) {
 			} else {
 				List<Ppt> l1 = new LinkedList<Ppt>();
 				l1.add(enterPpt12);
@@ -135,9 +123,26 @@ public class DiffByType {
 		putAllDistinctPpt(mEnter2, mExit2, mExitnn2, commonMethods, methodPptOnly2);
 	}
 
+	private boolean checkAllEmpty(List<Ppt> lenn1, List<Ppt> lenn2) {
+		boolean allEmpty = true;
+		for (Ppt p1 : lenn1) {
+			if(!p1.isEmpty()) {
+				allEmpty = false;
+			}
+		}
+		if (allEmpty) {
+			for (Ppt p2 : lenn2) {
+				if(!p2.isEmpty()) {
+					allEmpty = false;
+				}
+			}
+		}
+		return allEmpty;
+	}
+
 	private void putAllDistinctPpt(Map<String, Ppt> mEnter, Map<String, Ppt> mExit, Map<String, 
 			List<Ppt>> mExitnn,	Set<String> commonMethods, Map<String, List<Ppt>> receiver) {
-		Set<String> mEntrySet = mEnter.keySet();
+		Set<String> mEntrySet = new HashSet<String>(mEnter.keySet());
 		mEntrySet.removeAll(commonMethods);
 		for (String method : mEntrySet) {
 			Ppt enterPpt = mEnter.get(method);
@@ -177,7 +182,7 @@ public class DiffByType {
 			onlyM2Inv.add(p21);
 		}
 	}
-	
+
 	public void writeJSONTo(String folderName) throws IOException {
 		for (Ppt ppt : classPptOnly1) {
 			FileUtils.writeTo(folderName + "/ppts_only_in_" + if1.getFilename() + "/" + ppt.getRawName(), ppt.toJSON().toString());
