@@ -1,6 +1,7 @@
 package ca.concordia.apr.invsdiff.diff;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -51,7 +52,7 @@ public class Diff {
 		return diff;
 	}
 	
-	public void writeJSONTo(String filename) throws IOException {
+	public void writeJSONTo(String filename) throws IOException, NoSuchAlgorithmException {
 		JSONObject outputJson = new JSONObject();
 		JSONArray commonPptsArray = new JSONArray();
 		Iterator<Ppt> itLeft = this.onlyLeftInvs.iterator();

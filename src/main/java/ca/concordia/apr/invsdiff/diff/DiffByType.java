@@ -1,6 +1,7 @@
 package ca.concordia.apr.invsdiff.diff;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -240,7 +241,7 @@ public class DiffByType {
 		}
 	}
 
-	public void writeJSONTo(String folderName) throws IOException {
+	public void writeJSONTo(String folderName) throws IOException, NoSuchAlgorithmException {
 		writeDistinctPpts(folderName, if1.getFilename(), classPptOnly1, objectPptOnly1, methodPptOnly1);
 		writeDistinctPpts(folderName, if2.getFilename(), classPptOnly2, objectPptOnly2, methodPptOnly2);
 		writeCommonObjectOrClassPpts(folderName, if1.getFilename(), if2.getFilename(), classInvOnly1, classInvOnly2);
@@ -267,7 +268,7 @@ public class DiffByType {
 	}
 
 	private void writeCommonObjectOrClassPpts(String folderName, String filename1, String filename2, List<Ppt> pptList1,
-			List<Ppt> pptList2) throws IOException {
+			List<Ppt> pptList2) throws IOException, NoSuchAlgorithmException {
 		Iterator<Ppt> it1 = pptList1.iterator();
 		Iterator<Ppt> it2 = pptList2.iterator();
 		while (it1.hasNext()) {
@@ -282,7 +283,7 @@ public class DiffByType {
 	}
 
 	private void writeDistinctPpts(String folderName, String filename, List<Ppt> classPptList, List<Ppt> objectPptList,
-			Map<String, List<Ppt>> methodPptMap) throws IOException {
+			Map<String, List<Ppt>> methodPptMap) throws IOException, NoSuchAlgorithmException {
 		for (Ppt ppt : classPptList) {
 			FileUtils.writeTo(folderName + "/ppts_only_in_" + filename + "/" + ppt.getRawName(),
 					ppt.toJSON().toString());

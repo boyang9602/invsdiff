@@ -2,6 +2,7 @@ package ca.concordia.apr.invsdiff;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 
 import ca.concordia.apr.invsdiff.diff.Diff;
 import ca.concordia.apr.invsdiff.diff.DiffByType;
@@ -12,7 +13,7 @@ import ca.concordia.apr.invsdiff.diff.DiffByType;
  */
 public class App 
 {
-    public static void main( String[] args ) throws FileNotFoundException, IOException
+    public static void main( String[] args ) throws FileNotFoundException, IOException, NoSuchAlgorithmException
     {
     	if (args.length < 2) {
     		System.out.println("Usage: \nca.concordia.apr.invsdiff.App [options] invsfile0 invsfile1 invsfile2 ... \noptions: \n\t--multiple generate multiple diff files by name");
