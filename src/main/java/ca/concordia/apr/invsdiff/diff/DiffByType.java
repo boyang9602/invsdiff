@@ -76,20 +76,20 @@ public class DiffByType {
 			Ppt exitPpt12 = mExit1.get(method).diff(mExit2.get(method));
 			Ppt exitPpt21 = mExit2.get(method).diff(mExit1.get(method));
 
-			List<Ppt> lenn1 = new LinkedList<Ppt>();
-			List<Ppt> lenn2 = new LinkedList<Ppt>();
-			List<Ppt> olenn1 = new LinkedList<Ppt>(mExitnn1.get(method));
-			List<Ppt> olenn2 = new LinkedList<Ppt>(mExitnn2.get(method));
-			Iterator<Ppt> it1 = olenn1.iterator();
-			Iterator<Ppt> it2 = olenn2.iterator();
+			List<Ppt> listExitnn1 = new LinkedList<Ppt>();
+			List<Ppt> listExitnn2 = new LinkedList<Ppt>();
+			List<Ppt> originListExitnn1 = mExitnn1.get(method);
+			List<Ppt> originListExitnn2 = mExitnn2.get(method);
+			Iterator<Ppt> it1 = originListExitnn1.iterator();
+			Iterator<Ppt> it2 = originListExitnn2.iterator();
 			while(it1.hasNext()) {
 				Ppt p1 = it1.next();
 				boolean found = false;
 				while(it2.hasNext()) {
 					Ppt p2 = it2.next();
 					if (p1.getExitPoint() == p2.getExitPoint()) {
-						lenn1.add(p1.diff(p2));
-						lenn2.add(p2.diff(p1));
+						listExitnn1.add(p1.diff(p2));
+						listExitnn2.add(p2.diff(p1));
 						it1.remove();
 						it2.remove();
 						found = true;
@@ -97,24 +97,24 @@ public class DiffByType {
 					}
 				}
 				if (!found) {
-					lenn1.add(p1);
+					listExitnn1.add(p1);
 				}
 			}
-			lenn2.addAll(olenn2);
+			listExitnn2.addAll(originListExitnn2);
 
 			if (enterPpt12.isEmpty() && enterPpt21.isEmpty() 
 					&& exitPpt12.isEmpty() && exitPpt21.isEmpty() 
-					&& checkAllEmpty(lenn1, lenn2)) {
+					&& checkAllEmpty(listExitnn1, listExitnn2)) {
 			} else {
 				List<Ppt> l1 = new LinkedList<Ppt>();
 				l1.add(enterPpt12);
 				l1.add(exitPpt12);
-				l1.addAll(lenn1);
+				l1.addAll(listExitnn1);
 				methodInvOnly1.put(method, l1);
 				List<Ppt> l2 = new LinkedList<Ppt>();
 				l2.add(enterPpt21);
 				l2.add(exitPpt21);
-				l2.addAll(lenn2);
+				l2.addAll(listExitnn2);
 				methodInvOnly2.put(method, l2);
 			}
 		}
