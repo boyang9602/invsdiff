@@ -18,6 +18,26 @@ public class InvsFile {
 	private Map<String, Ppt> exitPpts = new HashMap<String, Ppt>();
 	private Map<String, List<Ppt>> exitnnPpts = new HashMap<String, List<Ppt>>();
 
+	public final Map<String, Ppt> getClassPpts() {
+		return classPpts;
+	}
+
+	public final Map<String, Ppt> getObjectPpts() {
+		return objectPpts;
+	}
+
+	public final Map<String, Ppt> getEnterPpts() {
+		return enterPpts;
+	}
+
+	public final Map<String, Ppt> getExitPpts() {
+		return exitPpts;
+	}
+
+	public final Map<String, List<Ppt>> getExitnnPpts() {
+		return exitnnPpts;
+	}
+
 	public final Map<String, Ppt> getPpts() {
 		return ppts;
 	}
@@ -73,5 +93,12 @@ public class InvsFile {
 		}
 		this.ppts.put(currPpt.getRawName(), currPpt);
 		br.close();
+
+		if (enterPpts.keySet().containsAll(exitPpts.keySet()) || exitPpts.keySet().containsAll(enterPpts.keySet())) {
+			throw new RuntimeException("unmatched enter and exit");
+		}
+		if (exitPpts.keySet().containsAll(exitnnPpts.keySet())) {
+			throw new RuntimeException("unmatched exit and exitnn");
+		}
 	}
 }

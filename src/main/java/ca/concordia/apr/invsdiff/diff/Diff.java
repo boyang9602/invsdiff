@@ -1,4 +1,4 @@
-package ca.concordia.apr.invsdiff;
+package ca.concordia.apr.invsdiff.diff;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -11,6 +11,9 @@ import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import ca.concordia.apr.invsdiff.InvsFile;
+import ca.concordia.apr.invsdiff.Ppt;
+
 public class Diff {
 	String leftName;
 	String rightName;
@@ -21,10 +24,6 @@ public class Diff {
 	List<Ppt> onlyRightInvs = new LinkedList<Ppt>();
 	
 	public static Diff compare(InvsFile if1, InvsFile if2) {
-		return compare(if1, if2, false);
-	}
-	
-	public static Diff compare(InvsFile if1, InvsFile if2, boolean multiple) {
 		Diff diff = new Diff();
 		diff.leftName = if1.getFilename();
 		diff.rightName = if2.getFilename();
