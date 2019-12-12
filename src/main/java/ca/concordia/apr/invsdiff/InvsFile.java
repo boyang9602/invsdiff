@@ -19,6 +19,10 @@ public class InvsFile {
 	private Map<String, List<Ppt>> exitnnPpts = new HashMap<String, List<Ppt>>();
 	private Map<String, List<Ppt>> condExitPpts = new HashMap<String, List<Ppt>>();
 
+	public final Map<String, List<Ppt>> getCondExitPpts() {
+		return condExitPpts;
+	}
+
 	public final Map<String, Ppt> getClassPpts() {
 		return classPpts;
 	}
