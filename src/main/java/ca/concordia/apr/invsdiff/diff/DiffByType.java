@@ -62,9 +62,9 @@ public class DiffByType {
 		Map<String, Ppt> mExit1 = if1.getExitPpts();
 		Map<String, List<Ppt>> mExitnn1 = if1.getExitnnPpts();
 		
-		Map<String, Ppt> mEnter2 = if1.getEnterPpts();
-		Map<String, Ppt> mExit2 = if1.getExitPpts();
-		Map<String, List<Ppt>> mExitnn2 = if1.getExitnnPpts();
+		Map<String, Ppt> mEnter2 = if2.getEnterPpts();
+		Map<String, Ppt> mExit2 = if2.getExitPpts();
+		Map<String, List<Ppt>> mExitnn2 = if2.getExitnnPpts();
 		
 		Set<String> mEntrySet1 = new HashSet<String>(mEnter1.keySet());
 		mEntrySet1.retainAll(mEnter2.keySet());
@@ -80,27 +80,37 @@ public class DiffByType {
 			List<Ppt> listExitnn2 = new LinkedList<Ppt>();
 			List<Ppt> originListExitnn1 = mExitnn1.get(method);
 			List<Ppt> originListExitnn2 = mExitnn2.get(method);
-			Iterator<Ppt> it1 = originListExitnn1.iterator();
-			Iterator<Ppt> it2 = originListExitnn2.iterator();
-			while(it1.hasNext()) {
-				Ppt p1 = it1.next();
-				boolean found = false;
-				while(it2.hasNext()) {
-					Ppt p2 = it2.next();
-					if (p1.getExitPoint() == p2.getExitPoint()) {
-						listExitnn1.add(p1.diff(p2));
-						listExitnn2.add(p2.diff(p1));
-						it1.remove();
-						it2.remove();
-						found = true;
-						break;
+			if (originListExitnn1 == null && originListExitnn2 == null) {
+			} else if (originListExitnn1 == null && originListExitnn2 != null) {
+				listExitnn2.addAll(originListExitnn2);
+			} else if (originListExitnn1 != null && originListExitnn2 == null) {
+				listExitnn1.addAll(originListExitnn1);
+			} else {
+				Iterator<Ppt> it1 = new LinkedList<Ppt>(originListExitnn1).iterator();
+				Iterator<Ppt> it2 = new LinkedList<Ppt>(originListExitnn2).iterator();
+				while(it1.hasNext()) {
+					Ppt p1 = it1.next();
+					boolean found = false;
+					while(it2.hasNext()) {
+						Ppt p2 = it2.next();
+						if (p1.getExitPoint() == p2.getExitPoint()) {
+							listExitnn1.add(p1.diff(p2));
+							listExitnn2.add(p2.diff(p1));
+							it1.remove();
+							it2.remove();
+							found = true;
+							break;
+						}
+					}
+					if (!found) {
+						listExitnn1.add(p1);
 					}
 				}
-				if (!found) {
-					listExitnn1.add(p1);
+				listExitnn2.addAll(originListExitnn2);
+				while(it2.hasNext()) {
+					listExitnn2.add(it2.next());
 				}
 			}
-			listExitnn2.addAll(originListExitnn2);
 
 			if (enterPpt12.isEmpty() && enterPpt21.isEmpty() 
 					&& exitPpt12.isEmpty() && exitPpt21.isEmpty() 
@@ -142,9 +152,9 @@ public class DiffByType {
 
 	private void putAllDistinctPpt(Map<String, Ppt> mEnter, Map<String, Ppt> mExit, Map<String, 
 			List<Ppt>> mExitnn,	Set<String> commonMethods, Map<String, List<Ppt>> receiver) {
-		Set<String> mEntrySet = new HashSet<String>(mEnter.keySet());
-		mEntrySet.removeAll(commonMethods);
-		for (String method : mEntrySet) {
+		Set<String> mEnterSet = new HashSet<String>(mEnter.keySet());
+		mEnterSet.removeAll(commonMethods);
+		for (String method : mEnterSet) {
 			Ppt enterPpt = mEnter.get(method);
 			Ppt exitPpt = mExit.get(method);
 			List<Ppt> exitnnPpts = mExitnn.get(method);
