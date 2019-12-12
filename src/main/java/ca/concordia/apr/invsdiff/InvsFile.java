@@ -11,7 +11,6 @@ import java.util.Map;
 
 public class InvsFile {
 	private String filename;
-	private Map<String, Ppt> ppts = new HashMap<String, Ppt>();
 	private Map<String, Ppt> classPpts = new HashMap<String, Ppt>();
 	private Map<String, Ppt> objectPpts = new HashMap<String, Ppt>();
 	private Map<String, Ppt> enterPpts = new HashMap<String, Ppt>();
@@ -43,10 +42,6 @@ public class InvsFile {
 		return exitnnPpts;
 	}
 
-	public final Map<String, Ppt> getPpts() {
-		return ppts;
-	}
-
 	public final String getFilename() {
 		return filename.substring(filename.lastIndexOf('/') + 1);
 	}
@@ -64,38 +59,7 @@ public class InvsFile {
 		while (line != null) {
 			if (line.matches("^=+$")) {
 				if (currPpt != null) {
-					this.ppts.put(currPpt.getRawName(), currPpt);
-					switch (currPpt.getType()) {
-					case CLASS:
-						this.classPpts.put(currPpt.getName(), currPpt);
-						break;
-					case OBJECT:
-						this.objectPpts.put(currPpt.getName(), currPpt);
-						break;
-					case ENTER:
-						this.enterPpts.put(currPpt.getName(), currPpt);
-						break;
-					case EXIT:
-						if (currPpt.getCondition() != null) {
-							List<Ppt> list = condExitPpts.get(currPpt.getName());
-							if (list == null) {
-								list = new LinkedList<Ppt>();
-								condExitPpts.put(currPpt.getName(), list);
-							}
-							list.add(currPpt);
-						} else {
-							this.exitPpts.put(currPpt.getName(), currPpt);
-						}
-						break;
-					case EXITNN:						
-						List<Ppt> ennPpts = this.exitnnPpts.get(currPpt.getName());
-						if (ennPpts == null) {
-							ennPpts = new LinkedList<Ppt>();
-							this.exitnnPpts.put(currPpt.getName(), ennPpts);
-						}
-						ennPpts.add(currPpt);
-						break;
-					}
+					addCurrPpt(currPpt);
 				}
 				currPpt = new Ppt();
 				line = br.readLine();
@@ -105,11 +69,45 @@ public class InvsFile {
 			}
 			line = br.readLine();
 		}
-		this.ppts.put(currPpt.getRawName(), currPpt);
+		addCurrPpt(currPpt);
 		br.close();
 
 		if (!exitPpts.keySet().containsAll(exitnnPpts.keySet())) {
 			throw new RuntimeException("unmatched exit and exitnn");
+		}
+	}
+
+	private void addCurrPpt(Ppt currPpt) {
+		switch (currPpt.getType()) {
+		case CLASS:
+			this.classPpts.put(currPpt.getName(), currPpt);
+			break;
+		case OBJECT:
+			this.objectPpts.put(currPpt.getName(), currPpt);
+			break;
+		case ENTER:
+			this.enterPpts.put(currPpt.getName(), currPpt);
+			break;
+		case EXIT:
+			if (currPpt.getCondition() != null) {
+				List<Ppt> list = condExitPpts.get(currPpt.getName());
+				if (list == null) {
+					list = new LinkedList<Ppt>();
+					condExitPpts.put(currPpt.getName(), list);
+				}
+				list.add(currPpt);
+			} else {
+				this.exitPpts.put(currPpt.getName(), currPpt);
+			}
+			break;
+		case EXITNN:						
+			List<Ppt> ennPpts = this.exitnnPpts.get(currPpt.getName());
+			if (ennPpts == null) {
+				ennPpts = new LinkedList<Ppt>();
+				this.exitnnPpts.put(currPpt.getName(), ennPpts);
+			}
+			ennPpts.add(currPpt);
+			break;
 		}
 	}
 }

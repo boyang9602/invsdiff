@@ -19,6 +19,8 @@ public class Ppt {
 	private Set<String> invs = new HashSet<String>();
 	private String rawName;
 	private String name;
+	private String className;
+	private String methodName;
 	private PPT_TYPE type;
 	private int exitPoint = -1;
 	private String condition = null;
@@ -50,6 +52,19 @@ public class Ppt {
 		} else {
 			throw new RuntimeException("unexpected ppt: " + rawName);
 		}
+		if (this.type != PPT_TYPE.CLASS && this.type != PPT_TYPE.OBJECT) {
+			int lastDot = name.lastIndexOf('.');
+			className = name.substring(0, lastDot);
+			methodName = name.substring(lastDot + 1);
+		} else {
+			className = name;
+		}
+	}
+	public final String getClassName() {
+		return className;
+	}
+	public final String getMethodName() {
+		return methodName;
 	}
 	public final String getRawName() {
 		return rawName;
