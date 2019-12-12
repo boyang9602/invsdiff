@@ -17,6 +17,7 @@ public class InvsFile {
 	private Map<String, Ppt> enterPpts = new HashMap<String, Ppt>();
 	private Map<String, Ppt> exitPpts = new HashMap<String, Ppt>();
 	private Map<String, List<Ppt>> exitnnPpts = new HashMap<String, List<Ppt>>();
+	private Map<String, List<Ppt>> condExitPpts = new HashMap<String, List<Ppt>>();
 
 	public final Map<String, Ppt> getClassPpts() {
 		return classPpts;
@@ -51,13 +52,13 @@ public class InvsFile {
 		BufferedReader br = new BufferedReader(new FileReader(filename));
 		String line = br.readLine();
 		
-		if (line == null || !line.matches("=+")) {
+		if (line == null || !line.matches("^=+$")) {
 			br.close();
 			throw new RuntimeException("invalid invs file, first line: " + line);
 		}
 		Ppt currPpt = null;
 		while (line != null) {
-			if (line.matches("=+")) {
+			if (line.matches("^=+$")) {
 				if (currPpt != null) {
 					this.ppts.put(currPpt.getRawName(), currPpt);
 					switch (currPpt.getType()) {
@@ -71,9 +72,18 @@ public class InvsFile {
 						this.enterPpts.put(currPpt.getName(), currPpt);
 						break;
 					case EXIT:
-						this.exitPpts.put(currPpt.getName(), currPpt);
+						if (currPpt.getCondition() != null) {
+							List<Ppt> list = condExitPpts.get(currPpt.getName());
+							if (list == null) {
+								list = new LinkedList<Ppt>();
+								condExitPpts.put(currPpt.getName(), list);
+							}
+							list.add(currPpt);
+						} else {
+							this.exitPpts.put(currPpt.getName(), currPpt);
+						}
 						break;
-					case EXITNN:
+					case EXITNN:						
 						List<Ppt> ennPpts = this.exitnnPpts.get(currPpt.getName());
 						if (ennPpts == null) {
 							ennPpts = new LinkedList<Ppt>();
@@ -94,10 +104,7 @@ public class InvsFile {
 		this.ppts.put(currPpt.getRawName(), currPpt);
 		br.close();
 
-		if (enterPpts.keySet().containsAll(exitPpts.keySet()) || exitPpts.keySet().containsAll(enterPpts.keySet())) {
-			throw new RuntimeException("unmatched enter and exit");
-		}
-		if (exitPpts.keySet().containsAll(exitnnPpts.keySet())) {
+		if (!exitPpts.keySet().containsAll(exitnnPpts.keySet())) {
 			throw new RuntimeException("unmatched exit and exitnn");
 		}
 	}
