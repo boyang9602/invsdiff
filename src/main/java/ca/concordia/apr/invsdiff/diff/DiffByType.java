@@ -1,15 +1,20 @@
 package ca.concordia.apr.invsdiff.diff;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+
+import org.json.JSONArray;
 
 import ca.concordia.apr.invsdiff.InvsFile;
 import ca.concordia.apr.invsdiff.Ppt;
+import ca.concordia.apr.invsdiff.utils.FileUtils;
 
 public class DiffByType {
 	private InvsFile if1;
@@ -147,11 +152,12 @@ public class DiffByType {
 	}
 
 	private void compare(Map<String, Ppt> m1, Map<String, Ppt> m2, List<Ppt> onlyM1Ppt, List<Ppt> onlyM2Ppt, List<Ppt> onlyM1Inv, List<Ppt> onlyM2Inv) {
-		Set<String> pptNames1 = m1.keySet();
-		Set<String> pptNames2 = m2.keySet();
+		Set<String> pptNames1 = new HashSet<String>(m1.keySet());
+		Set<String> pptNames2 = new HashSet<String>(m2.keySet());
 		
 		pptNames1.retainAll(pptNames2);
 		Set<String> commonNames = new HashSet<String>(pptNames1);
+		pptNames1 = new HashSet<String>(m1.keySet());
 		pptNames1.removeAll(commonNames);
 		for (String pptName : pptNames1) {
 			onlyM1Ppt.add(m1.get(pptName));
@@ -172,10 +178,16 @@ public class DiffByType {
 		}
 	}
 	
-	public final String getLeftName() {
-		return if1.getFilename();
-	}
-	public final String getRightName() {
-		return if2.getFilename();
+	public void writeJSONTo(String folderName) throws IOException {
+		for (Ppt ppt : classPptOnly1) {
+			FileUtils.writeTo(folderName + "/ppts_only_in_" + if1.getFilename() + "/" + ppt.getRawName(), ppt.toJSON().toString());
+		}
+		for (Ppt ppt : objectPptOnly1) {
+			FileUtils.writeTo(folderName + "/ppts_only_in_" + if1.getFilename() + "/" + ppt.getRawName(), ppt.toJSON().toString());
+		}
+		for (Entry<String, List<Ppt>> pptList : methodPptOnly1.entrySet()) {
+			JSONArray pptListJSONArray = new JSONArray(pptList.getValue());
+			FileUtils.writeTo(folderName + "/ppts_only_in_" + if1.getFilename() + "/" + pptList.getKey(), pptListJSONArray.toString());
+		}
 	}
 }
