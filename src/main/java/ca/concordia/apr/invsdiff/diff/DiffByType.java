@@ -39,7 +39,7 @@ public class DiffByType {
 	private Map<String, List<Ppt>> methodInvOnly1 = new HashMap<String, List<Ppt>>();
 	private Map<String, List<Ppt>> methodInvOnly2 = new HashMap<String, List<Ppt>>();
 
-	public DiffByType (InvsFile if1, InvsFile if2) {
+	public DiffByType(InvsFile if1, InvsFile if2) {
 		this.if1 = if1;
 		this.if2 = if2;
 	}
@@ -55,14 +55,15 @@ public class DiffByType {
 	}
 
 	private void compareObject() {
-		compare(if1.getObjectPpts(), if2.getObjectPpts(), objectPptOnly1, objectPptOnly2, objectInvOnly1, objectInvOnly2);
+		compare(if1.getObjectPpts(), if2.getObjectPpts(), objectPptOnly1, objectPptOnly2, objectInvOnly1,
+				objectInvOnly2);
 	}
 
 	private void compareMethod() {
 		Map<String, Ppt> mEnter1 = if1.getEnterPpts();
 		Map<String, Ppt> mExit1 = if1.getExitPpts();
 		Map<String, List<Ppt>> mExitnn1 = if1.getExitnnPpts();
-		
+
 		Map<String, Ppt> mEnter2 = if2.getEnterPpts();
 		Map<String, Ppt> mExit2 = if2.getExitPpts();
 		Map<String, List<Ppt>> mExitnn2 = if2.getExitnnPpts();
@@ -85,9 +86,9 @@ public class DiffByType {
 				enterPpt21 = enterPpt2;
 			} else {
 				enterPpt12 = enterPpt1.diff(enterPpt2);
-				enterPpt21 = enterPpt2.diff(enterPpt1);	
+				enterPpt21 = enterPpt2.diff(enterPpt1);
 			}
-			
+
 			Ppt exitPpt1 = mExit1.get(method);
 			Ppt exitPpt2 = mExit2.get(method);
 			Ppt exitPpt12 = null;
@@ -114,14 +115,14 @@ public class DiffByType {
 			} else {
 				Iterator<Ppt> it1 = new LinkedList<Ppt>(originListExitnn1).iterator();
 				Iterator<Ppt> it2 = new LinkedList<Ppt>(originListExitnn2).iterator();
-				while(it1.hasNext()) {
+				while (it1.hasNext()) {
 					Ppt p1 = it1.next();
 					boolean found = false;
-					while(it2.hasNext()) {
+					while (it2.hasNext()) {
 						Ppt p2 = it2.next();
 						if (p1.getExitPoint() == p2.getExitPoint()) {
-							if ((p1.getCondition() == null && p2.getCondition() == null) || 
-									(p1.getCondition() != null && p2.getCondition() != null && p1.getCondition().equals(p2.getCondition()))) {
+							if ((p1.getCondition() == null && p2.getCondition() == null) || (p1.getCondition() != null
+									&& p2.getCondition() != null && p1.getCondition().equals(p2.getCondition()))) {
 								listExitnn1.add(p1.diff(p2));
 								listExitnn2.add(p2.diff(p1));
 								it1.remove();
@@ -135,15 +136,13 @@ public class DiffByType {
 						listExitnn1.add(p1);
 					}
 				}
-				while(it2.hasNext()) {
+				while (it2.hasNext()) {
 					listExitnn2.add(it2.next());
 				}
 			}
 
-			if ((enterPpt12 == null || enterPpt12.isEmpty())
-					&& (enterPpt21 == null || enterPpt21.isEmpty()) 
-					&& (exitPpt12 == null || exitPpt12.isEmpty())
-					&& (exitPpt21 == null || exitPpt21.isEmpty())
+			if ((enterPpt12 == null || enterPpt12.isEmpty()) && (enterPpt21 == null || enterPpt21.isEmpty())
+					&& (exitPpt12 == null || exitPpt12.isEmpty()) && (exitPpt21 == null || exitPpt21.isEmpty())
 					&& checkAllEmpty(listExitnn1, listExitnn2)) {
 			} else {
 				List<Ppt> l1 = new LinkedList<Ppt>();
@@ -180,13 +179,13 @@ public class DiffByType {
 	private boolean checkAllEmpty(List<Ppt> lenn1, List<Ppt> lenn2) {
 		boolean allEmpty = true;
 		for (Ppt p1 : lenn1) {
-			if(!p1.isEmpty()) {
+			if (!p1.isEmpty()) {
 				allEmpty = false;
 			}
 		}
 		if (allEmpty) {
 			for (Ppt p2 : lenn2) {
-				if(!p2.isEmpty()) {
+				if (!p2.isEmpty()) {
 					allEmpty = false;
 				}
 			}
@@ -194,8 +193,8 @@ public class DiffByType {
 		return allEmpty;
 	}
 
-	private void putAllDistinctPpt(Map<String, Ppt> mEnter, Map<String, Ppt> mExit, Map<String, 
-			List<Ppt>> mExitnn,	Set<String> commonMethods, Map<String, List<Ppt>> receiver) {
+	private void putAllDistinctPpt(Map<String, Ppt> mEnter, Map<String, Ppt> mExit, Map<String, List<Ppt>> mExitnn,
+			Set<String> commonMethods, Map<String, List<Ppt>> receiver) {
 		Set<String> mEnterSet = new HashSet<String>(mEnter.keySet());
 		mEnterSet.removeAll(commonMethods);
 		for (String method : mEnterSet) {
@@ -210,10 +209,11 @@ public class DiffByType {
 		}
 	}
 
-	private void compare(Map<String, Ppt> m1, Map<String, Ppt> m2, List<Ppt> onlyM1Ppt, List<Ppt> onlyM2Ppt, List<Ppt> onlyM1Inv, List<Ppt> onlyM2Inv) {
+	private void compare(Map<String, Ppt> m1, Map<String, Ppt> m2, List<Ppt> onlyM1Ppt, List<Ppt> onlyM2Ppt,
+			List<Ppt> onlyM1Inv, List<Ppt> onlyM2Inv) {
 		Set<String> pptNames1 = new HashSet<String>(m1.keySet());
 		Set<String> pptNames2 = new HashSet<String>(m2.keySet());
-		
+
 		pptNames1.retainAll(pptNames2);
 		Set<String> commonNames = new HashSet<String>(pptNames1);
 		pptNames1 = new HashSet<String>(m1.keySet());
@@ -230,13 +230,14 @@ public class DiffByType {
 			Ppt p2 = m2.get(pptName);
 			Ppt p12 = p1.diff(p2);
 			Ppt p21 = p2.diff(p1);
-			if (p12.isEmpty() && p21.isEmpty()) continue;
-			
+			if (p12.isEmpty() && p21.isEmpty())
+				continue;
+
 			onlyM1Inv.add(p12);
 			onlyM2Inv.add(p21);
 		}
 	}
-	
+
 	public void writeJSONTo(String folderName) throws IOException {
 		writeDistinctPpts(folderName, if1.getFilename(), classPptOnly1, objectPptOnly1, methodPptOnly1);
 		writeDistinctPpts(folderName, if2.getFilename(), classPptOnly2, objectPptOnly2, methodPptOnly2);
@@ -249,16 +250,25 @@ public class DiffByType {
 			List<Ppt> ppts2 = methodInvOnly2.get(method);
 			JSONObject invDiff = new JSONObject();
 			invDiff.append("name", method);
-			invDiff.append(if1.getFilename(), new JSONArray(ppts1));
-			invDiff.append(if2.getFilename(), new JSONArray(ppts2));
+			invDiff.append(if1.getFilename(), pptListToJSONArray(ppts1));
+			invDiff.append(if2.getFilename(), pptListToJSONArray(ppts2));
 			FileUtils.writeTo(folderName + "/commonPpts/" + method, invDiff.toString());
 		}
 	}
 
-	private void writeCommonObjectOrClassPpts(String folderName, String filename1, String filename2, List<Ppt> pptList1, List<Ppt> pptList2) throws IOException {
+	private JSONArray pptListToJSONArray(List<Ppt> ppts) {
+		JSONArray arr = new JSONArray();
+		for (Ppt ppt : ppts) {
+			arr.put(ppt.toJSON());
+		}
+		return arr;
+	}
+
+	private void writeCommonObjectOrClassPpts(String folderName, String filename1, String filename2, List<Ppt> pptList1,
+			List<Ppt> pptList2) throws IOException {
 		Iterator<Ppt> it1 = pptList1.iterator();
 		Iterator<Ppt> it2 = pptList2.iterator();
-		while(it1.hasNext()) {
+		while (it1.hasNext()) {
 			JSONObject invDiff = new JSONObject();
 			Ppt p1 = it1.next();
 			Ppt p2 = it2.next();
@@ -269,16 +279,19 @@ public class DiffByType {
 		}
 	}
 
-	private void writeDistinctPpts(String folderName, String filename, List<Ppt> classPptList, List<Ppt> objectPptList, Map<String, List<Ppt>> methodPptMap) throws IOException {
+	private void writeDistinctPpts(String folderName, String filename, List<Ppt> classPptList, List<Ppt> objectPptList,
+			Map<String, List<Ppt>> methodPptMap) throws IOException {
 		for (Ppt ppt : classPptList) {
-			FileUtils.writeTo(folderName + "/ppts_only_in_" + filename + "/" + ppt.getRawName(), ppt.toJSON().toString());
+			FileUtils.writeTo(folderName + "/ppts_only_in_" + filename + "/" + ppt.getRawName(),
+					ppt.toJSON().toString());
 		}
 		for (Ppt ppt : objectPptList) {
-			FileUtils.writeTo(folderName + "/ppts_only_in_" + filename + "/" + ppt.getRawName(), ppt.toJSON().toString());
+			FileUtils.writeTo(folderName + "/ppts_only_in_" + filename + "/" + ppt.getRawName(),
+					ppt.toJSON().toString());
 		}
 		for (Entry<String, List<Ppt>> pptList : methodPptMap.entrySet()) {
-			JSONArray pptListJSONArray = new JSONArray(pptList.getValue());
-			FileUtils.writeTo(folderName + "/ppts_only_in_" + filename + "/" + pptList.getKey(), pptListJSONArray.toString());
+			FileUtils.writeTo(folderName + "/ppts_only_in_" + filename + "/" + pptList.getKey(),
+					pptListToJSONArray(pptList.getValue()).toString());
 		}
 	}
 }
