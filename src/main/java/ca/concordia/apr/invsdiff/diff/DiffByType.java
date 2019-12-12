@@ -204,7 +204,9 @@ public class DiffByType {
 			List<Ppt> l = new LinkedList<Ppt>();
 			l.add(enterPpt);
 			l.add(exitPpt);
-			l.addAll(exitnnPpts);
+			if (exitnnPpts != null) {
+				l.addAll(exitnnPpts);
+			}
 			receiver.put(method, l);
 		}
 	}
