@@ -294,11 +294,13 @@ public class Diff {
 		Map<String, Ppt> enterMethodMap = ifn.getEnterPpts().get(pptName);
 		Map<String, List<Ppt>> exitMethodMap = ifn.getExitPpts().get(pptName);
 		Map<String, List<Ppt>> exitnnMethodMap = ifn.getExitnnPpts().get(pptName);
-		Set<String> methodNameSet = new HashSet<String>(enterMethodMap.keySet());
-		methodNameSet.addAll(exitMethodMap.keySet());
+		Set<String> methodNameSet = enterMethodMap == null ? new HashSet<String>() : new HashSet<String>(enterMethodMap.keySet());
+		if (exitMethodMap != null) {
+			methodNameSet.addAll(exitMethodMap.keySet());
+		}
 		for (String methodName : methodNameSet) {
-			Ppt enterPpt = enterMethodMap.get(methodName);
-			List<Ppt> exitPptList = exitMethodMap.get(methodName);
+			Ppt enterPpt = enterMethodMap == null ? null : enterMethodMap.get(methodName);
+			List<Ppt> exitPptList = exitMethodMap == null ? null : exitMethodMap.get(methodName);
 			List<Ppt> methodPptList = new LinkedList<Ppt>();
 			methodPpts1.put(methodName, methodPptList);
 			if (enterPpt != null) {
@@ -352,31 +354,34 @@ public class Diff {
 					Set<Integer> pptExit2 = new HashSet<Integer>();
 					for (Ppt ppt1 : methodPptMap1.get(methodName)) {
 						if (ppt1.getType() == Ppt.PPT_TYPE.ENTER || ppt1.getType() == Ppt.PPT_TYPE.EXIT) {
-							for (Ppt ppt2 : methodPptMap2.get(methodName)) {
-								if (ppt1.getType() == ppt2.getType()) {
-									JSONArray sides = new JSONArray();
-									sides.put(new JSONObject().put(if1.getFilename(), ppt1.toJSON(false)));
-									sides.put(new JSONObject().put(if2.getFilename(), ppt2.toJSON(false)));
-									tmp.append(ppt1.getMethodName(), 
-											new JSONObject().put(ppt1.getType().toString(), sides));
-									break;
+							if (methodPptMap2.get(methodName) != null) {
+								for (Ppt ppt2 : methodPptMap2.get(methodName)) {
+									if (ppt1.getType() == ppt2.getType()) {
+										JSONArray sides = new JSONArray();
+										sides.put(new JSONObject().put(if1.getFilename(), ppt1.toJSON(false)));
+										sides.put(new JSONObject().put(if2.getFilename(), ppt2.toJSON(false)));
+										tmp.append(ppt1.getMethodName(), 
+												new JSONObject().put(ppt1.getType().toString(), sides));
+										break;
+									}
 								}
 							}
 						} else {
-							for (Ppt ppt2 : methodPptMap2.get(methodName)) {
-								if (ppt2.getType() == Ppt.PPT_TYPE.EXITNN && ppt1.getExitPoint() == ppt2.getExitPoint()) {
-									JSONArray sides = new JSONArray();
-									sides.put(new JSONObject().put(if1.getFilename(), ppt1.toJSON(false)));
-									sides.put(new JSONObject().put(if2.getFilename(), ppt2.toJSON(false)));
-									tmp.append(ppt1.getMethodName(), 
-											new JSONObject().append(ppt1.getType().toString(), 
-													new JSONObject().put("" + ppt1.getExitPoint(), sides)));
-									pptExit1.add(ppt1.getExitPoint());
-									pptExit2.add(ppt2.getExitPoint());
-									break;
+							if (methodPptMap2.get(methodName) != null) {
+								for (Ppt ppt2 : methodPptMap2.get(methodName)) {
+									if (ppt2.getType() == Ppt.PPT_TYPE.EXITNN && ppt1.getExitPoint() == ppt2.getExitPoint()) {
+										JSONArray sides = new JSONArray();
+										sides.put(new JSONObject().put(if1.getFilename(), ppt1.toJSON(false)));
+										sides.put(new JSONObject().put(if2.getFilename(), ppt2.toJSON(false)));
+										tmp.append(ppt1.getMethodName(), 
+												new JSONObject().append(ppt1.getType().toString(), 
+														new JSONObject().put("" + ppt1.getExitPoint(), sides)));
+										pptExit1.add(ppt1.getExitPoint());
+										pptExit2.add(ppt2.getExitPoint());
+										break;
+									}
 								}
 							}
-							
 						}
 					}
 					for (Ppt ppt1 : methodPptMap1.get(methodName)) {
@@ -389,14 +394,16 @@ public class Diff {
 											new JSONObject().put("" + ppt1.getExitPoint(), sides)));
 						}
 					}
-					for (Ppt ppt2 : methodPptMap2.get(methodName)) {
-						if (ppt2.getType() == Ppt.PPT_TYPE.EXITNN && !pptExit2.contains(ppt2.getExitPoint())) {
-							JSONArray sides = new JSONArray();
-							sides.put(new JSONObject().put(if2.getFilename(), ppt2.toJSON(false)));
-							sides.put(new JSONObject().put(if1.getFilename(), "N/A"));
-							tmp.append(ppt2.getMethodName(), 
-									new JSONObject().append(ppt2.getType().toString(), 
-											new JSONObject().put("" + ppt2.getExitPoint(), sides)));
+					if (methodPptMap2.get(methodName) != null) {
+						for (Ppt ppt2 : methodPptMap2.get(methodName)) {
+							if (ppt2.getType() == Ppt.PPT_TYPE.EXITNN && !pptExit2.contains(ppt2.getExitPoint())) {
+								JSONArray sides = new JSONArray();
+								sides.put(new JSONObject().put(if2.getFilename(), ppt2.toJSON(false)));
+								sides.put(new JSONObject().put(if1.getFilename(), "N/A"));
+								tmp.append(ppt2.getMethodName(), 
+										new JSONObject().append(ppt2.getType().toString(), 
+												new JSONObject().put("" + ppt2.getExitPoint(), sides)));
+							}
 						}
 					}
 					layer.put(tmp);
