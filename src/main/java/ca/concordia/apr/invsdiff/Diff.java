@@ -369,7 +369,7 @@ public class Diff {
 									sides.put(new JSONObject().put(if1.getFilename(), ppt1.toJSON(false)));
 									sides.put(new JSONObject().put(if2.getFilename(), ppt2.toJSON(false)));
 									tmp.append(ppt1.getMethodName(), 
-											new JSONObject().put(ppt1.getType().toString(), 
+											new JSONObject().append(ppt1.getType().toString(), 
 													new JSONObject().put("" + ppt1.getExitPoint(), sides)));
 									pptExit1.add(ppt1.getExitPoint());
 									pptExit2.add(ppt2.getExitPoint());
@@ -385,7 +385,7 @@ public class Diff {
 							sides.put(new JSONObject().put(if1.getFilename(), ppt1.toJSON(false)));
 							sides.put(new JSONObject().put(if2.getFilename(), "N/A"));
 							tmp.append(ppt1.getMethodName(), 
-									new JSONObject().put(ppt1.getType().toString(), 
+									new JSONObject().append(ppt1.getType().toString(), 
 											new JSONObject().put("" + ppt1.getExitPoint(), sides)));
 						}
 					}
@@ -395,7 +395,7 @@ public class Diff {
 							sides.put(new JSONObject().put(if2.getFilename(), ppt2.toJSON(false)));
 							sides.put(new JSONObject().put(if1.getFilename(), "N/A"));
 							tmp.append(ppt2.getMethodName(), 
-									new JSONObject().put(ppt2.getType().toString(), 
+									new JSONObject().append(ppt2.getType().toString(), 
 											new JSONObject().put("" + ppt2.getExitPoint(), sides)));
 						}
 					}
