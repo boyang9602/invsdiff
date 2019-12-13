@@ -14,13 +14,8 @@ public class InvsFile {
 	private Map<String, Ppt> classPpts = new HashMap<String, Ppt>();
 	private Map<String, Ppt> objectPpts = new HashMap<String, Ppt>();
 	private Map<String, Map<String, Ppt>> enterPpts = new HashMap<String, Map<String, Ppt>>();
-	private Map<String, Map<String, Ppt>> exitPpts = new HashMap<String, Map<String, Ppt>>();
+	private Map<String, Map<String, List<Ppt>>> exitPpts = new HashMap<String, Map<String, List<Ppt>>>();
 	private Map<String, Map<String, List<Ppt>>> exitnnPpts = new HashMap<String, Map<String, List<Ppt>>>();
-	private Map<String, List<Ppt>> condExitPpts = new HashMap<String, List<Ppt>>();
-
-	public final Map<String, List<Ppt>> getCondExitPpts() {
-		return condExitPpts;
-	}
 
 	public final Map<String, Ppt> getClassPpts() {
 		return classPpts;
@@ -34,7 +29,7 @@ public class InvsFile {
 		return enterPpts;
 	}
 
-	public final Map<String, Map<String, Ppt>> getExitPpts() {
+	public final Map<String, Map<String, List<Ppt>>> getExitPpts() {
 		return exitPpts;
 	}
 
@@ -93,29 +88,26 @@ public class InvsFile {
 			methodEnterPptMap.put(currPpt.getMethodName(), currPpt);
 			break;
 		case EXIT:
-			if (currPpt.getCondition() != null) {
-				List<Ppt> list = condExitPpts.get(currPpt.getName());
-				if (list == null) {
-					list = new LinkedList<Ppt>();
-					condExitPpts.put(currPpt.getName(), list);
-				}
-				list.add(currPpt);
-			} else {
-				Map<String, Ppt> methodExitPptMap = this.exitPpts.get(currPpt.getClassName());
-				if (methodExitPptMap == null) {
-					methodExitPptMap = new HashMap<String, Ppt>();
-					this.exitPpts.put(currPpt.getClassName(), methodExitPptMap);
-				}
-				methodExitPptMap.put(currPpt.getMethodName(), currPpt);
+			Map<String, List<Ppt>> methodExitPptMap = this.exitPpts.get(currPpt.getClassName());
+			if (methodExitPptMap == null) {
+				methodExitPptMap = new HashMap<String, List<Ppt>>();
+				this.exitPpts.put(currPpt.getClassName(), methodExitPptMap);
 			}
+			String methodName = currPpt.getMethodName();
+			List<Ppt> exitPptsList = methodExitPptMap.get(methodName);
+			if (exitPptsList == null) {
+				exitPptsList = new LinkedList<Ppt>();
+				methodExitPptMap.put(methodName, exitPptsList);
+			}
+			exitPptsList.add(currPpt);
 			break;
 		case EXITNN:						
-			Map<String, List<Ppt>> ennPptsMap = this.exitnnPpts.get(currPpt.getName());
+			Map<String, List<Ppt>> ennPptsMap = this.exitnnPpts.get(currPpt.getClassName());
 			if (ennPptsMap == null) {
 				ennPptsMap = new HashMap<String, List<Ppt>>();
 				this.exitnnPpts.put(currPpt.getClassName(), ennPptsMap);
 			}
-			String methodName = currPpt.getMethodName();
+			methodName = currPpt.getMethodName();
 			List<Ppt> ennPptsList = ennPptsMap.get(methodName);
 			if (ennPptsList == null) {
 				ennPptsList = new LinkedList<Ppt>();

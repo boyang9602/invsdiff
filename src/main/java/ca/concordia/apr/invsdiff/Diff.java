@@ -8,7 +8,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.json.JSONArray;
@@ -20,23 +19,25 @@ public class Diff {
 	private InvsFile if1;
 	private InvsFile if2;
 
-	private List<Ppt> classPptOnly1 = new LinkedList<Ppt>();
-	private List<Ppt> classPptOnly2 = new LinkedList<Ppt>();
+	private Map<String, Ppt> classPptOnly1 = new HashMap<String, Ppt>();
+	private Map<String, Ppt> classPptOnly2 = new HashMap<String, Ppt>();
 
-	private List<Ppt> objectPptOnly1 = new LinkedList<Ppt>();
-	private List<Ppt> objectPptOnly2 = new LinkedList<Ppt>();
+	private Map<String, Ppt> objectPptOnly1 = new HashMap<String, Ppt>();
+	private Map<String, Ppt> objectPptOnly2 = new HashMap<String, Ppt>();
 
-	private Map<String, List<Ppt>> methodPptOnly1 = new HashMap<String, List<Ppt>>();
-	private Map<String, List<Ppt>> methodPptOnly2 = new HashMap<String, List<Ppt>>();
+	private Map<String, Map<String, List<Ppt>>> classMethodPptOnly1Map = new HashMap<String, Map<String, List<Ppt>>>();
+	private Map<String, Map<String, List<Ppt>>> classMethodPptOnly2Map = new HashMap<String, Map<String, List<Ppt>>>();
 
-	private List<Ppt> classInvOnly1 = new LinkedList<Ppt>();
-	private List<Ppt> classInvOnly2 = new LinkedList<Ppt>();
+	private Map<String, Ppt> classInvOnly1 = new HashMap<String, Ppt>();
+	private Map<String, Ppt> classInvOnly2 = new HashMap<String, Ppt>();
 
-	private List<Ppt> objectInvOnly1 = new LinkedList<Ppt>();
-	private List<Ppt> objectInvOnly2 = new LinkedList<Ppt>();
+	private Map<String, Ppt> objectInvOnly1 = new HashMap<String, Ppt>();
+	private Map<String, Ppt> objectInvOnly2 = new HashMap<String, Ppt>();
 
-	private Map<String, List<Ppt>> methodInvOnly1 = new HashMap<String, List<Ppt>>();
-	private Map<String, List<Ppt>> methodInvOnly2 = new HashMap<String, List<Ppt>>();
+	private Map<String, Map<String, List<Ppt>>> classMethodInvOnly1Map = new HashMap<String, Map<String, List<Ppt>>>();
+	private Map<String, Map<String, List<Ppt>>> classMethodInvOnly2Map = new HashMap<String, Map<String, List<Ppt>>>();
+	
+	private Set<String> classCompared = new HashSet<String>();
 
 	public Diff(InvsFile if1, InvsFile if2) {
 		this.if1 = if1;
@@ -56,24 +57,29 @@ public class Diff {
 		compare(if1.getObjectPpts(), if2.getObjectPpts(), objectPptOnly1, objectPptOnly2, objectInvOnly1, objectInvOnly2);
 	}
 
-	private void compareMethod(String name) {
-		Map<String, Ppt> mEnter1 = if1.getEnterPpts().get(name);
-		Map<String, Ppt> mExit1 = if1.getExitPpts().get(name);
-		Map<String, List<Ppt>> mExitnn1 = if1.getExitnnPpts().get(name);
+	private void compareMethod(String className) {
+		if (classCompared.contains(className)) {
+			return;
+		} 
+		classCompared.add(className);
+		Map<String, Ppt> mEnter1 = if1.getEnterPpts().get(className);
+		Map<String, List<Ppt>> mExit1 = if1.getExitPpts().get(className);
+		Map<String, List<Ppt>> mExitnn1 = if1.getExitnnPpts().get(className);
 
-		Map<String, Ppt> mEnter2 = if2.getEnterPpts().get(name);
-		Map<String, Ppt> mExit2 = if2.getExitPpts().get(name);
-		Map<String, List<Ppt>> mExitnn2 = if2.getExitnnPpts().get(name);
+		Map<String, Ppt> mEnter2 = if2.getEnterPpts().get(className);
+		Map<String, List<Ppt>> mExit2 = if2.getExitPpts().get(className);
+		Map<String, List<Ppt>> mExitnn2 = if2.getExitnnPpts().get(className);
 
-		Set<String> mEnterSet1 = new HashSet<String>(mEnter1.keySet());
-		mEnterSet1.retainAll(mEnter2.keySet());
-		Set<String> commonMethods = mEnterSet1;
+		Set<String> commonMethods = mEnter1 == null ? new HashSet<String>() : new HashSet<String>(mEnter1.keySet());
+		if (mEnter2 != null) {
+			commonMethods.retainAll(mEnter2.keySet());
+		}
 		Set<String> mExitSet1 = new HashSet<String>(mExit1.keySet());
 		mExitSet1.retainAll(mExit2.keySet());
 		commonMethods.addAll(mExitSet1);
 		for (String method : commonMethods) {
-			Ppt enterPpt1 = mEnter1.get(method);
-			Ppt enterPpt2 = mEnter2.get(method);
+			Ppt enterPpt1 = mEnter1 == null ? null : mEnter1.get(method);
+			Ppt enterPpt2 = mEnter2 == null ? null : mEnter2.get(method);
 			Ppt enterPpt12 = null;
 			Ppt enterPpt21 = null;
 			if (enterPpt1 == null && enterPpt2 == null) {
@@ -86,24 +92,46 @@ public class Diff {
 				enterPpt21 = enterPpt2.diff(enterPpt1);
 			}
 
-			Ppt exitPpt1 = mExit1.get(method);
-			Ppt exitPpt2 = mExit2.get(method);
-			Ppt exitPpt12 = null;
-			Ppt exitPpt21 = null;
-			if (exitPpt1 == null && exitPpt2 == null) {
-			} else if (exitPpt1 != null && exitPpt2 == null) {
-				exitPpt12 = exitPpt1;
-			} else if (exitPpt1 == null && exitPpt2 != null) {
-				exitPpt21 = exitPpt2;
+			List<Ppt> listExit1 = new LinkedList<Ppt>();
+			List<Ppt> listExit2 = new LinkedList<Ppt>();
+			List<Ppt> originExit1 = mExit1.get(method);
+			List<Ppt> originExit2 = mExit2.get(method);
+			if (originExit1 == null && originExit2 == null) {
+			} else if (originExit1 != null && originExit2 == null) {
+				listExit1.addAll(originExit1);
+			} else if (originExit1 == null && originExit2 != null) {
+				listExit2.addAll(originExit2);
 			} else {
-				exitPpt12 = exitPpt1.diff(exitPpt2);
-				exitPpt21 = exitPpt2.diff(exitPpt1);
+				Iterator<Ppt> it1 = new LinkedList<Ppt>(originExit1).iterator();
+				Iterator<Ppt> it2 = new LinkedList<Ppt>(originExit2).iterator();
+				while (it1.hasNext()) {
+					Ppt p1 = it1.next();
+					boolean found = false;
+					while (it2.hasNext()) {
+						Ppt p2 = it2.next();
+						if ((p1.getCondition() == null && p2.getCondition() == null) || 
+								(p1.getCondition().equals(p2.getCondition()))) {
+							listExit1.add(p1.diff(p2));
+							listExit2.add(p2.diff(p1));
+							it1.remove();
+							it2.remove();
+							found = true;
+							break;
+						}
+					}
+					if (!found) {
+						listExit1.add(p1);
+					}
+				}
+				while (it2.hasNext()) {
+					listExit2.add(it2.next());
+				}
 			}
 
 			List<Ppt> listExitnn1 = new LinkedList<Ppt>();
 			List<Ppt> listExitnn2 = new LinkedList<Ppt>();
-			List<Ppt> originListExitnn1 = mExitnn1.get(method);
-			List<Ppt> originListExitnn2 = mExitnn2.get(method);
+			List<Ppt> originListExitnn1 = mExitnn1 == null ? null : mExitnn1.get(method);
+			List<Ppt> originListExitnn2 = mExitnn2 == null ? null : mExitnn2.get(method);
 			if (originListExitnn1 == null && originListExitnn2 == null) {
 			} else if (originListExitnn1 == null && originListExitnn2 != null) {
 				listExitnn2.addAll(originListExitnn2);
@@ -112,19 +140,21 @@ public class Diff {
 			} else {
 				Iterator<Ppt> it1 = new LinkedList<Ppt>(originListExitnn1).iterator();
 				Iterator<Ppt> it2 = new LinkedList<Ppt>(originListExitnn2).iterator();
+				Set<Integer> exitnn = new HashSet<Integer>();
 				while (it1.hasNext()) {
 					Ppt p1 = it1.next();
 					boolean found = false;
 					while (it2.hasNext()) {
 						Ppt p2 = it2.next();
 						if (p1.getExitPoint() == p2.getExitPoint()) {
-							if ((p1.getCondition() == null && p2.getCondition() == null) || (p1.getCondition() != null
-									&& p2.getCondition() != null && p1.getCondition().equals(p2.getCondition()))) {
+							if ((p1.getCondition() == null && p2.getCondition() == null) || 
+									(p1.getCondition() != null && p2.getCondition() != null && p1.getCondition().equals(p2.getCondition()))) {
 								listExitnn1.add(p1.diff(p2));
 								listExitnn2.add(p2.diff(p1));
 								it1.remove();
 								it2.remove();
 								found = true;
+								exitnn.add(p1.getExitPoint());
 								break;
 							}
 						}
@@ -133,46 +163,56 @@ public class Diff {
 						listExitnn1.add(p1);
 					}
 				}
-				while (it2.hasNext()) {
-					listExitnn2.add(it2.next());
+				for (Ppt p2 : originListExitnn2) {
+					if (!exitnn.contains(p2.getExitPoint())) {
+						listExitnn2.add(p2);
+					}
 				}
 			}
 
 			if ((enterPpt12 == null || enterPpt12.isEmpty()) 
 					&& (enterPpt21 == null || enterPpt21.isEmpty())
-					&& (exitPpt12 == null || exitPpt12.isEmpty()) 
-					&& (exitPpt21 == null || exitPpt21.isEmpty())
+					&& checkAllEmpty(listExit1, listExit2)
 					&& checkAllEmpty(listExitnn1, listExitnn2)) {
 			} else {
 				List<Ppt> l1 = new LinkedList<Ppt>();
 				if (enterPpt12 != null)
 					l1.add(enterPpt12);
-				if (exitPpt12 != null) {
-					l1.add(exitPpt12);
-					List<Ppt> condExitList = if1.getCondExitPpts().get(exitPpt12.getName());
-					if (condExitList != null) {
-						l1.addAll(condExitList);
-					}
-				}
+				l1.addAll(listExit1);
 				l1.addAll(listExitnn1);
-				methodInvOnly1.put(method, l1);
+				Map<String, List<Ppt>> methodInv1 = this.classMethodInvOnly1Map.get(className);
+				if (methodInv1 == null) {
+					methodInv1 = new HashMap<String, List<Ppt>>();
+					this.classMethodInvOnly1Map.put(className, methodInv1);
+				}
+				methodInv1.put(method, l1);
 				List<Ppt> l2 = new LinkedList<Ppt>();
 				if (enterPpt21 != null)
 					l2.add(enterPpt21);
-				if (exitPpt21 != null) {
-					l2.add(exitPpt21);
-					List<Ppt> condExitList = if2.getCondExitPpts().get(exitPpt21.getName());
-					if (condExitList != null) {
-						l2.addAll(condExitList);
-					}
-				}
+				l2.addAll(listExit2);
 				l2.addAll(listExitnn2);
-				methodInvOnly2.put(method, l2);
+				Map<String, List<Ppt>> methodInv2 = this.classMethodInvOnly2Map.get(className);
+				if (methodInv2 == null) {
+					methodInv2 = new HashMap<String, List<Ppt>>();
+					this.classMethodInvOnly2Map.put(className, methodInv2);
+				}
+				methodInv2.put(method, l2);
 			}
 		}
 
-		putAllDistinctPpt(mEnter1, mExit1, mExitnn1, commonMethods, methodPptOnly1);
-		putAllDistinctPpt(mEnter2, mExit2, mExitnn2, commonMethods, methodPptOnly2);
+		Map<String, List<Ppt>> methodInv1 = this.classMethodInvOnly1Map.get(className);
+		if(methodInv1 == null) {
+			methodInv1 = new HashMap<String, List<Ppt>>();
+			this.classMethodInvOnly1Map.put(className, methodInv1);
+		}
+		Map<String, List<Ppt>> methodInv2 = this.classMethodInvOnly2Map.get(className);
+		if(methodInv2 == null) {
+			methodInv2 = new HashMap<String, List<Ppt>>();
+			this.classMethodInvOnly2Map.put(className, methodInv2);
+		}
+		
+		putAllDistinctPpt(mEnter1, mExit1, mExitnn1, commonMethods, methodInv1);
+		putAllDistinctPpt(mEnter2, mExit2, mExitnn2, commonMethods, methodInv2);
 	}
 
 	private boolean checkAllEmpty(List<Ppt> lenn1, List<Ppt> lenn2) {
@@ -192,17 +232,20 @@ public class Diff {
 		return allEmpty;
 	}
 
-	private void putAllDistinctPpt(Map<String, Ppt> mEnter, Map<String, Ppt> mExit, Map<String, List<Ppt>> mExitnn,
+	private void putAllDistinctPpt(Map<String, Ppt> mEnter, Map<String, List<Ppt>> mExit, Map<String, List<Ppt>> mExitnn,
 			Set<String> commonMethods, Map<String, List<Ppt>> receiver) {
-		Set<String> mEnterSet = new HashSet<String>(mEnter.keySet());
-		mEnterSet.removeAll(commonMethods);
-		for (String method : mEnterSet) {
+		Set<String> mEnterExitSet = mEnter == null ? new HashSet<String>() : new HashSet<String>(mEnter.keySet());
+		mEnterExitSet.addAll(mExit == null ? new HashSet<String>() : mExit.keySet());
+		mEnterExitSet.removeAll(commonMethods);
+		for (String method : mEnterExitSet) {
 			Ppt enterPpt = mEnter.get(method);
-			Ppt exitPpt = mExit.get(method);
-			List<Ppt> exitnnPpts = mExitnn.get(method);
+			List<Ppt> exitPpts = mExit.get(method);
+			List<Ppt> exitnnPpts = mExitnn == null ? null : mExitnn.get(method);
 			List<Ppt> l = new LinkedList<Ppt>();
 			l.add(enterPpt);
-			l.add(exitPpt);
+			if (exitPpts != null) {
+				l.addAll(exitPpts);
+			}
 			if (exitnnPpts != null) {
 				l.addAll(exitnnPpts);
 			}
@@ -210,8 +253,7 @@ public class Diff {
 		}
 	}
 
-	private void compare(Map<String, Ppt> m1, Map<String, Ppt> m2, List<Ppt> onlyM1Ppt, List<Ppt> onlyM2Ppt,
-			List<Ppt> onlyM1Inv, List<Ppt> onlyM2Inv) {
+	private void compare(Map<String, Ppt> m1, Map<String, Ppt> m2, Map<String, Ppt> onlyM1Ppt, Map<String, Ppt> onlyM2Ppt, Map<String, Ppt> onlyM1Inv, Map<String, Ppt> onlyM2Inv) {
 		Set<String> pptNames1 = new HashSet<String>(m1.keySet());
 		Set<String> pptNames2 = new HashSet<String>(m2.keySet());
 
@@ -220,81 +262,191 @@ public class Diff {
 		pptNames1 = new HashSet<String>(m1.keySet());
 		pptNames1.removeAll(commonNames);
 		for (String pptName : pptNames1) {
-			onlyM1Ppt.add(m1.get(pptName));
+			onlyM1Ppt.put(pptName, m1.get(pptName));
+			addAllDistinctMethodPpts(pptName, this.classMethodPptOnly1Map, this.if1);
 		}
 		pptNames2.removeAll(commonNames);
 		for (String pptName : pptNames2) {
-			onlyM2Ppt.add(m2.get(pptName));
+			onlyM2Ppt.put(pptName, m2.get(pptName));
+			addAllDistinctMethodPpts(pptName, this.classMethodPptOnly2Map, this.if2);
 		}
 		for (String pptName : commonNames) {
 			Ppt p1 = m1.get(pptName);
 			Ppt p2 = m2.get(pptName);
 			Ppt p12 = p1.diff(p2);
 			Ppt p21 = p2.diff(p1);
-			if (p12.isEmpty() && p21.isEmpty())
-				continue;
-
-			onlyM1Inv.add(p12);
-			onlyM2Inv.add(p21);
+			if (p12.isEmpty() && p21.isEmpty()) {
+			} else {
+				onlyM1Inv.put(pptName, p12);
+				onlyM2Inv.put(pptName, p21);
+			}
 
 			compareMethod(pptName);
 		}
 	}
 
+	private void addAllDistinctMethodPpts(String pptName, Map<String, Map<String, List<Ppt>>> classMethodMap, InvsFile ifn) {
+		Map<String, List<Ppt>> methodPpts1 = classMethodMap.get(pptName);
+		if (methodPpts1 == null) {
+			methodPpts1 = new HashMap<String, List<Ppt>>();
+			classMethodMap.put(pptName, methodPpts1);
+		}
+		Map<String, Ppt> enterMethodMap = ifn.getEnterPpts().get(pptName);
+		Map<String, List<Ppt>> exitMethodMap = ifn.getExitPpts().get(pptName);
+		Map<String, List<Ppt>> exitnnMethodMap = ifn.getExitnnPpts().get(pptName);
+		Set<String> methodNameSet = new HashSet<String>(enterMethodMap.keySet());
+		methodNameSet.addAll(exitMethodMap.keySet());
+		for (String methodName : methodNameSet) {
+			Ppt enterPpt = enterMethodMap.get(methodName);
+			List<Ppt> exitPptList = exitMethodMap.get(methodName);
+			List<Ppt> methodPptList = new LinkedList<Ppt>();
+			methodPpts1.put(methodName, methodPptList);
+			if (enterPpt != null) {
+				methodPptList.add(enterPpt);
+			}
+			if (exitPptList != null) {
+				methodPptList.addAll(exitPptList);
+			}
+			if (exitnnMethodMap != null) {
+				List<Ppt> exitnnPptList = exitnnMethodMap.get(methodName);
+				if (exitnnPptList != null) {
+					methodPptList.addAll(exitnnPptList);
+				}
+			}
+		}
+		this.classCompared.add(pptName);
+	}
+
 	public void writeJSONTo(String folderName) throws IOException, NoSuchAlgorithmException {
-		writeDistinctPpts(folderName, if1.getFilename(), classPptOnly1, objectPptOnly1, methodPptOnly1);
-		writeDistinctPpts(folderName, if2.getFilename(), classPptOnly2, objectPptOnly2, methodPptOnly2);
-		writeCommonObjectOrClassPpts(folderName, if1.getFilename(), if2.getFilename(), classInvOnly1, classInvOnly2);
-		writeCommonObjectOrClassPpts(folderName, if1.getFilename(), if2.getFilename(), objectInvOnly1, objectInvOnly2);
+		writeOnlyExistOneSide(this.classPptOnly1, this.objectPptOnly1, this.classMethodPptOnly1Map, folderName + "/" + if1.getFilename());
+		writeOnlyExistOneSide(this.classPptOnly2, this.objectPptOnly2, this.classMethodPptOnly2Map, folderName + "/" + if2.getFilename());
+		Set<String> classNames1 = new HashSet<String>(this.classInvOnly1.keySet());
+		classNames1.addAll(this.objectInvOnly1.keySet());
+		classNames1.addAll(this.classMethodInvOnly1Map.keySet());
+		for (String classPptName : classNames1) {
+			JSONObject root = new JSONObject();
+			JSONArray layer = new JSONArray();
+			root.put(classPptName, layer);
+			JSONObject tmp;
 
-		Set<String> commonMethods = methodInvOnly1.keySet();
-		for (String method : commonMethods) {
-			List<Ppt> ppts1 = methodInvOnly1.get(method);
-			List<Ppt> ppts2 = methodInvOnly2.get(method);
-			JSONObject invDiff = new JSONObject();
-			invDiff.put("name", method);
-			invDiff.put(if1.getFilename(), pptListToJSONArray(ppts1));
-			invDiff.put(if2.getFilename(), pptListToJSONArray(ppts2));
-			FileUtils.writeTo(folderName + "/commonPpts/" + method, invDiff.toString());
+			Ppt classPpt1 = this.classInvOnly1.get(classPptName);
+			Ppt classPpt2 = this.classInvOnly2.get(classPptName);
+			if (classPpt1 != null) {
+				tmp = new JSONObject();
+				tmp.append("CLASS", new JSONObject().put(if1.getFilename(), classPpt1.toJSON(false))).append("CLASS", new JSONObject().append(if2.getFilename(), classPpt2.toJSON(false)));
+			}
+			
+			Ppt objectPpt1 = this.objectInvOnly1.get(classPptName);
+			Ppt objectPpt2 = this.objectInvOnly2.get(classPptName);
+			if (objectPpt1 != null) {
+				tmp = new JSONObject();
+				tmp.append("OBJECT", new JSONObject().put(if1.getFilename(), objectPpt1.toJSON(false))).append("OBJECT", new JSONObject().append(if2.getFilename(), objectPpt2.toJSON(false)));
+			}
+
+			Map<String, List<Ppt>> methodPptMap1 = this.classMethodInvOnly1Map.get(classPptName);
+			Map<String, List<Ppt>> methodPptMap2 = this.classMethodInvOnly2Map.get(classPptName);
+			if (methodPptMap1 != null) {
+				for (String methodName : methodPptMap1.keySet()) {
+					tmp = new JSONObject();
+					Set<Integer> pptExit1 = new HashSet<Integer>();
+					Set<Integer> pptExit2 = new HashSet<Integer>();
+					for (Ppt ppt1 : methodPptMap1.get(methodName)) {
+						if (ppt1.getType() == Ppt.PPT_TYPE.ENTER || ppt1.getType() == Ppt.PPT_TYPE.EXIT) {
+							for (Ppt ppt2 : methodPptMap2.get(methodName)) {
+								if (ppt1.getType() == ppt2.getType()) {
+									tmp.append(ppt1.getMethodName(), 
+											new JSONObject().append(ppt1.getType().toString(), 
+													new JSONObject().append(if1.getFilename(), ppt1.toJSON(false)).append(if2.getFilename(), ppt2.toJSON(false))));
+									break;
+								}
+							}
+						} else {
+							for (Ppt ppt2 : methodPptMap2.get(methodName)) {
+								if (ppt2.getType() == Ppt.PPT_TYPE.EXITNN && ppt1.getExitPoint() == ppt2.getExitPoint()) {
+									tmp.append(ppt1.getMethodName(), 
+											new JSONObject().append(ppt1.getType().toString(), 
+													new JSONObject().append("" + ppt1.getExitPoint(), 
+															new JSONObject().append(if1.getFilename(), ppt1.toJSON(false)).append(if2.getFilename(), ppt2.toJSON(false)))));
+									pptExit1.add(ppt1.getExitPoint());
+									pptExit2.add(ppt2.getExitPoint());
+									break;
+								}
+							}
+							
+						}
+					}
+					for (Ppt ppt1 : methodPptMap1.get(methodName)) {
+						if (ppt1.getType() == Ppt.PPT_TYPE.EXITNN && !pptExit1.contains(ppt1.getExitPoint())) {
+							tmp.append(ppt1.getMethodName(), 
+									new JSONObject().append(ppt1.getType().toString(), 
+											new JSONObject().append("" + ppt1.getExitPoint(), 
+													new JSONObject().append(if1.getFilename(), ppt1.toJSON(false)).append(if2.getFilename(), "N/A"))));
+						}
+					}
+					for (Ppt ppt2 : methodPptMap2.get(methodName)) {
+						if (ppt2.getType() == Ppt.PPT_TYPE.EXITNN && !pptExit2.contains(ppt2.getExitPoint())) {
+							tmp.append(ppt2.getMethodName(), 
+									new JSONObject().append(ppt2.getType().toString(), 
+											new JSONObject().append("" + ppt2.getExitPoint(), 
+													new JSONObject().append(if2.getFilename(), ppt2.toJSON(false)).append(if1.getFilename(), "N/A"))));
+						}
+					}
+					layer.put(tmp);
+				}
+			}
+			FileUtils.writeTo(folderName + "/common/" + classPptName, root.toString());
 		}
 	}
 
-	private JSONArray pptListToJSONArray(List<Ppt> ppts) {
-		JSONArray arr = new JSONArray();
-		for (Ppt ppt : ppts) {
-			arr.put(ppt.toJSON());
-		}
-		return arr;
-	}
+	private void writeOnlyExistOneSide(Map<String, Ppt> classMap, Map<String, Ppt> objectMap, Map<String, Map<String, List<Ppt>>> classMethodMap, String filename) throws NoSuchAlgorithmException, IOException {
+		Set<String> classNames1 = new HashSet<String>(classMap.keySet());
+		classNames1.addAll(objectMap.keySet());
+		classNames1.addAll(classMethodMap.keySet());
+		for (String classPptName : classNames1) {
+			JSONObject root = new JSONObject();
+			JSONArray layer = new JSONArray();
+			root.put(classPptName, layer);
+			JSONObject tmp;
 
-	private void writeCommonObjectOrClassPpts(String folderName, String filename1, String filename2, List<Ppt> pptList1,
-			List<Ppt> pptList2) throws IOException, NoSuchAlgorithmException {
-		Iterator<Ppt> it1 = pptList1.iterator();
-		Iterator<Ppt> it2 = pptList2.iterator();
-		while (it1.hasNext()) {
-			JSONObject invDiff = new JSONObject();
-			Ppt p1 = it1.next();
-			Ppt p2 = it2.next();
-			invDiff.put("name", p1.getRawName());
-			invDiff.put(filename1, p1.toJSON(false));
-			invDiff.put(filename2, p2.toJSON(false));
-			FileUtils.writeTo(folderName + "/commonPpts/" + p1.getRawName(), invDiff.toString());
-		}
-	}
-
-	private void writeDistinctPpts(String folderName, String filename, List<Ppt> classPptList, List<Ppt> objectPptList,
-			Map<String, List<Ppt>> methodPptMap) throws IOException, NoSuchAlgorithmException {
-		for (Ppt ppt : classPptList) {
-			FileUtils.writeTo(folderName + "/ppts_only_in_" + filename + "/" + ppt.getRawName(),
-					ppt.toJSON().toString());
-		}
-		for (Ppt ppt : objectPptList) {
-			FileUtils.writeTo(folderName + "/ppts_only_in_" + filename + "/" + ppt.getRawName(),
-					ppt.toJSON().toString());
-		}
-		for (Entry<String, List<Ppt>> pptList : methodPptMap.entrySet()) {
-			FileUtils.writeTo(folderName + "/ppts_only_in_" + filename + "/" + pptList.getKey(),
-					pptListToJSONArray(pptList.getValue()).toString());
+			Ppt classPpt = classMap.get(classPptName);
+			if (classPpt != null) {
+				tmp = new JSONObject();
+				JSONArray tmpArr = new JSONArray();
+				tmpArr.put(new JSONObject().put(if1.getFilename(), classPpt.toJSON(false)));
+				tmpArr.put(new JSONObject().put(if2.getFilename(), "N/A"));
+				tmp.put("CLASS", tmpArr);
+				layer.put(tmp);
+			}
+			Ppt objectPpt = objectMap.get(classPptName);
+			if (objectPpt != null) {
+				tmp = new JSONObject();
+				JSONArray tmpArr = new JSONArray();
+				tmpArr.put(new JSONObject().put(if1.getFilename(), objectPpt.toJSON(false)));
+				tmpArr.put(new JSONObject().put(if2.getFilename(), "N/A"));
+				tmp.put("OBJECT", tmpArr);
+				layer.put(tmp);
+			}
+			
+			Map<String, List<Ppt>> methodPptMap = classMethodMap.get(classPptName);
+			if (methodPptMap != null) {
+				for (String methodName : methodPptMap.keySet()) {
+					tmp = new JSONObject();
+					for (Ppt ppt : methodPptMap.get(methodName)) {
+						if (ppt.getType() == Ppt.PPT_TYPE.ENTER || ppt.getType() == Ppt.PPT_TYPE.EXIT) {
+							tmp.append(ppt.getMethodName(), 
+									new JSONObject().append(ppt.getType().toString(), 
+											new JSONObject().append(if1.getFilename(), ppt.toJSON(false)).append(if2.getFilename(), "N/A")));
+						} else {
+							tmp.append(ppt.getMethodName(), 
+									new JSONObject().append(ppt.getType().toString(), 
+											new JSONObject().append("" + ppt.getExitPoint(), 
+													new JSONObject().append(if1.getFilename(), ppt.toJSON(false)).append(if2.getFilename(), "N/A"))));
+						}
+					}
+					layer.put(tmp);
+				}
+			}
+			FileUtils.writeTo(filename + "/" + classPptName, root.toString());
 		}
 	}
 }
