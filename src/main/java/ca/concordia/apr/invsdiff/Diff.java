@@ -402,7 +402,9 @@ public class Diff {
 					layer.put(tmp);
 				}
 			}
-			FileUtils.writeTo(folderName + "/common/" + classPptName, root.toString());
+			if (!layer.isEmpty()) {
+				FileUtils.writeTo(folderName + "/common/" + classPptName, root.toString());
+			}
 		}
 	}
 
@@ -458,7 +460,9 @@ public class Diff {
 					layer.put(tmp);
 				}
 			}
-			FileUtils.writeTo(filename + "/" + classPptName, root.toString());
+			if (!layer.isEmpty()) {
+				FileUtils.writeTo(filename + "/" + classPptName, root.toString());
+			}
 		}
 	}
 }
