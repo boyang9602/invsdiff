@@ -13,9 +13,9 @@ public class InvsFile {
 	private String filename;
 	private Map<String, Ppt> classPpts = new HashMap<String, Ppt>();
 	private Map<String, Ppt> objectPpts = new HashMap<String, Ppt>();
-	private Map<String, Ppt> enterPpts = new HashMap<String, Ppt>();
-	private Map<String, Ppt> exitPpts = new HashMap<String, Ppt>();
-	private Map<String, List<Ppt>> exitnnPpts = new HashMap<String, List<Ppt>>();
+	private Map<String, Map<String, Ppt>> enterPpts = new HashMap<String, Map<String, Ppt>>();
+	private Map<String, Map<String, Ppt>> exitPpts = new HashMap<String, Map<String, Ppt>>();
+	private Map<String, Map<String, List<Ppt>>> exitnnPpts = new HashMap<String, Map<String, List<Ppt>>>();
 	private Map<String, List<Ppt>> condExitPpts = new HashMap<String, List<Ppt>>();
 
 	public final Map<String, List<Ppt>> getCondExitPpts() {
@@ -30,15 +30,15 @@ public class InvsFile {
 		return objectPpts;
 	}
 
-	public final Map<String, Ppt> getEnterPpts() {
+	public final Map<String, Map<String, Ppt>> getEnterPpts() {
 		return enterPpts;
 	}
 
-	public final Map<String, Ppt> getExitPpts() {
+	public final Map<String, Map<String, Ppt>> getExitPpts() {
 		return exitPpts;
 	}
 
-	public final Map<String, List<Ppt>> getExitnnPpts() {
+	public final Map<String, Map<String, List<Ppt>>> getExitnnPpts() {
 		return exitnnPpts;
 	}
 
@@ -71,7 +71,6 @@ public class InvsFile {
 		}
 		addCurrPpt(currPpt);
 		br.close();
-
 		if (!exitPpts.keySet().containsAll(exitnnPpts.keySet())) {
 			throw new RuntimeException("unmatched exit and exitnn");
 		}
@@ -86,7 +85,12 @@ public class InvsFile {
 			this.objectPpts.put(currPpt.getName(), currPpt);
 			break;
 		case ENTER:
-			this.enterPpts.put(currPpt.getName(), currPpt);
+			Map<String, Ppt> methodEnterPptMap = this.enterPpts.get(currPpt.getClassName());
+			if (methodEnterPptMap == null) {
+				methodEnterPptMap = new HashMap<String, Ppt>();
+				this.enterPpts.put(currPpt.getClassName(), methodEnterPptMap);
+			}
+			methodEnterPptMap.put(currPpt.getMethodName(), currPpt);
 			break;
 		case EXIT:
 			if (currPpt.getCondition() != null) {
@@ -97,16 +101,27 @@ public class InvsFile {
 				}
 				list.add(currPpt);
 			} else {
-				this.exitPpts.put(currPpt.getName(), currPpt);
+				Map<String, Ppt> methodExitPptMap = this.exitPpts.get(currPpt.getClassName());
+				if (methodExitPptMap == null) {
+					methodExitPptMap = new HashMap<String, Ppt>();
+					this.exitPpts.put(currPpt.getClassName(), methodExitPptMap);
+				}
+				methodExitPptMap.put(currPpt.getMethodName(), currPpt);
 			}
 			break;
 		case EXITNN:						
-			List<Ppt> ennPpts = this.exitnnPpts.get(currPpt.getName());
-			if (ennPpts == null) {
-				ennPpts = new LinkedList<Ppt>();
-				this.exitnnPpts.put(currPpt.getName(), ennPpts);
+			Map<String, List<Ppt>> ennPptsMap = this.exitnnPpts.get(currPpt.getName());
+			if (ennPptsMap == null) {
+				ennPptsMap = new HashMap<String, List<Ppt>>();
+				this.exitnnPpts.put(currPpt.getClassName(), ennPptsMap);
 			}
-			ennPpts.add(currPpt);
+			String methodName = currPpt.getMethodName();
+			List<Ppt> ennPptsList = ennPptsMap.get(methodName);
+			if (ennPptsList == null) {
+				ennPptsList = new LinkedList<Ppt>();
+				ennPptsMap.put(methodName, ennPptsList);
+			}
+			ennPptsList.add(currPpt);
 			break;
 		}
 	}

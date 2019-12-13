@@ -53,7 +53,7 @@ public class Ppt {
 			throw new RuntimeException("unexpected ppt: " + rawName);
 		}
 		if (this.type != PPT_TYPE.CLASS && this.type != PPT_TYPE.OBJECT) {
-			int lastDot = name.lastIndexOf('.');
+			int lastDot = name.substring(0, name.indexOf('(')).lastIndexOf('.');
 			className = name.substring(0, lastDot);
 			methodName = name.substring(lastDot + 1);
 		} else {

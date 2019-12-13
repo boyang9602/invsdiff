@@ -46,7 +46,6 @@ public class Diff {
 	public void execute() {
 		compareClass();
 		compareObject();
-		compareMethod();
 	}
 
 	private void compareClass() {
@@ -54,18 +53,17 @@ public class Diff {
 	}
 
 	private void compareObject() {
-		compare(if1.getObjectPpts(), if2.getObjectPpts(), objectPptOnly1, objectPptOnly2, objectInvOnly1,
-				objectInvOnly2);
+		compare(if1.getObjectPpts(), if2.getObjectPpts(), objectPptOnly1, objectPptOnly2, objectInvOnly1, objectInvOnly2);
 	}
 
-	private void compareMethod() {
-		Map<String, Ppt> mEnter1 = if1.getEnterPpts();
-		Map<String, Ppt> mExit1 = if1.getExitPpts();
-		Map<String, List<Ppt>> mExitnn1 = if1.getExitnnPpts();
+	private void compareMethod(String name) {
+		Map<String, Ppt> mEnter1 = if1.getEnterPpts().get(name);
+		Map<String, Ppt> mExit1 = if1.getExitPpts().get(name);
+		Map<String, List<Ppt>> mExitnn1 = if1.getExitnnPpts().get(name);
 
-		Map<String, Ppt> mEnter2 = if2.getEnterPpts();
-		Map<String, Ppt> mExit2 = if2.getExitPpts();
-		Map<String, List<Ppt>> mExitnn2 = if2.getExitnnPpts();
+		Map<String, Ppt> mEnter2 = if2.getEnterPpts().get(name);
+		Map<String, Ppt> mExit2 = if2.getExitPpts().get(name);
+		Map<String, List<Ppt>> mExitnn2 = if2.getExitnnPpts().get(name);
 
 		Set<String> mEnterSet1 = new HashSet<String>(mEnter1.keySet());
 		mEnterSet1.retainAll(mEnter2.keySet());
@@ -140,8 +138,10 @@ public class Diff {
 				}
 			}
 
-			if ((enterPpt12 == null || enterPpt12.isEmpty()) && (enterPpt21 == null || enterPpt21.isEmpty())
-					&& (exitPpt12 == null || exitPpt12.isEmpty()) && (exitPpt21 == null || exitPpt21.isEmpty())
+			if ((enterPpt12 == null || enterPpt12.isEmpty()) 
+					&& (enterPpt21 == null || enterPpt21.isEmpty())
+					&& (exitPpt12 == null || exitPpt12.isEmpty()) 
+					&& (exitPpt21 == null || exitPpt21.isEmpty())
 					&& checkAllEmpty(listExitnn1, listExitnn2)) {
 			} else {
 				List<Ppt> l1 = new LinkedList<Ppt>();
@@ -236,6 +236,8 @@ public class Diff {
 
 			onlyM1Inv.add(p12);
 			onlyM2Inv.add(p21);
+
+			compareMethod(pptName);
 		}
 	}
 
