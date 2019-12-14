@@ -460,7 +460,7 @@ public class Diff {
 							sides.put(new JSONObject().put(if1.getFilename(), ppt.toJSON(false)));
 							sides.put(new JSONObject().put(if2.getFilename(), "N/A"));
 							tmp.append(ppt.getMethodName(), 
-									new JSONObject().put(ppt.getType().toString(), 
+									new JSONObject().append(ppt.getType().toString(), 
 											new JSONObject().put("" + ppt.getExitPoint(), sides)));
 						}
 					}
