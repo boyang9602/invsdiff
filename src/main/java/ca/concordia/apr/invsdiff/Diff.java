@@ -320,8 +320,8 @@ public class Diff {
 	}
 
 	public void writeJSONTo(String folderName) throws IOException, NoSuchAlgorithmException {
-		writeOnlyExistOneSide(this.classPptOnly1, this.objectPptOnly1, this.classMethodPptOnly1Map, folderName + "/" + if1.getFilename());
-		writeOnlyExistOneSide(this.classPptOnly2, this.objectPptOnly2, this.classMethodPptOnly2Map, folderName + "/" + if2.getFilename());
+		writeOnlyExistOneSide(this.classPptOnly1, this.objectPptOnly1, this.classMethodPptOnly1Map, folderName + "/" + if1.getFilename(), if1.getFilename(), if2.getFilename());
+		writeOnlyExistOneSide(this.classPptOnly2, this.objectPptOnly2, this.classMethodPptOnly2Map, folderName + "/" + if2.getFilename(), if2.getFilename(), if1.getFilename());
 		Set<String> classNames1 = new HashSet<String>(this.classInvOnly1.keySet());
 		classNames1.addAll(this.objectInvOnly1.keySet());
 		classNames1.addAll(this.classMethodInvOnly1Map.keySet());
@@ -415,7 +415,9 @@ public class Diff {
 		}
 	}
 
-	private void writeOnlyExistOneSide(Map<String, Ppt> classMap, Map<String, Ppt> objectMap, Map<String, Map<String, List<Ppt>>> classMethodMap, String filename) throws NoSuchAlgorithmException, IOException {
+	private void writeOnlyExistOneSide(Map<String, Ppt> classMap, Map<String, Ppt> objectMap, 
+			Map<String, Map<String, List<Ppt>>> classMethodMap, String filename,
+			String f1name, String f2name) throws NoSuchAlgorithmException, IOException {
 		Set<String> classNames1 = new HashSet<String>(classMap.keySet());
 		classNames1.addAll(objectMap.keySet());
 		classNames1.addAll(classMethodMap.keySet());
@@ -429,8 +431,8 @@ public class Diff {
 			if (classPpt != null) {
 				tmp = new JSONObject();
 				JSONArray tmpArr = new JSONArray();
-				tmpArr.put(new JSONObject().put(if1.getFilename(), classPpt.toJSON(false)));
-				tmpArr.put(new JSONObject().put(if2.getFilename(), "N/A"));
+				tmpArr.put(new JSONObject().put(f1name, classPpt.toJSON(false)));
+				tmpArr.put(new JSONObject().put(f2name, "N/A"));
 				tmp.put("CLASS", tmpArr);
 				layer.put(tmp);
 			}
@@ -438,8 +440,8 @@ public class Diff {
 			if (objectPpt != null) {
 				tmp = new JSONObject();
 				JSONArray tmpArr = new JSONArray();
-				tmpArr.put(new JSONObject().put(if1.getFilename(), objectPpt.toJSON(false)));
-				tmpArr.put(new JSONObject().put(if2.getFilename(), "N/A"));
+				tmpArr.put(new JSONObject().put(f1name, objectPpt.toJSON(false)));
+				tmpArr.put(new JSONObject().put(f2name, "N/A"));
 				tmp.put("OBJECT", tmpArr);
 				layer.put(tmp);
 			}
@@ -451,14 +453,14 @@ public class Diff {
 					for (Ppt ppt : methodPptMap.get(methodName)) {
 						if (ppt.getType() == Ppt.PPT_TYPE.ENTER || ppt.getType() == Ppt.PPT_TYPE.EXIT) {
 							JSONArray sides = new JSONArray();
-							sides.put(new JSONObject().put(if1.getFilename(), ppt.toJSON(false)));
-							sides.put(new JSONObject().put(if2.getFilename(), "N/A"));
+							sides.put(new JSONObject().put(f1name, ppt.toJSON(false)));
+							sides.put(new JSONObject().put(f2name, "N/A"));
 							tmp.append(ppt.getMethodName(), 
 									new JSONObject().put(ppt.getType().toString(), sides));
 						} else {
 							JSONArray sides = new JSONArray();
-							sides.put(new JSONObject().put(if1.getFilename(), ppt.toJSON(false)));
-							sides.put(new JSONObject().put(if2.getFilename(), "N/A"));
+							sides.put(new JSONObject().put(f1name, ppt.toJSON(false)));
+							sides.put(new JSONObject().put(f2name, "N/A"));
 							tmp.append(ppt.getMethodName(), 
 									new JSONObject().append(ppt.getType().toString(), 
 											new JSONObject().put("" + ppt.getExitPoint(), sides)));
