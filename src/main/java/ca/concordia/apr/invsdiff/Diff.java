@@ -38,6 +38,8 @@ public class Diff {
 	private Map<String, Map<String, List<Ppt>>> classMethodInvOnly2Map = new HashMap<String, Map<String, List<Ppt>>>();
 	
 	private Set<String> classCompared = new HashSet<String>();
+	
+	private Set<String> allFiles = new HashSet<String>();
 
 	public Diff(InvsFile if1, InvsFile if2) {
 		this.if1 = if1;
@@ -320,8 +322,8 @@ public class Diff {
 	}
 
 	public void writeJSONTo(String folderName) throws IOException, NoSuchAlgorithmException {
-		writeOnlyExistOneSide(this.classPptOnly1, this.objectPptOnly1, this.classMethodPptOnly1Map, folderName + "/" + if1.getFilename(), if1.getFilename(), if2.getFilename());
-		writeOnlyExistOneSide(this.classPptOnly2, this.objectPptOnly2, this.classMethodPptOnly2Map, folderName + "/" + if2.getFilename(), if2.getFilename(), if1.getFilename());
+		writeOnlyExistOneSide(this.classPptOnly1, this.objectPptOnly1, this.classMethodPptOnly1Map, folderName, if1.getFilename(), if2.getFilename());
+		writeOnlyExistOneSide(this.classPptOnly2, this.objectPptOnly2, this.classMethodPptOnly2Map, folderName, if2.getFilename(), if1.getFilename());
 		Set<String> classNames1 = new HashSet<String>(this.classInvOnly1.keySet());
 		classNames1.addAll(this.objectInvOnly1.keySet());
 		classNames1.addAll(this.classMethodInvOnly1Map.keySet());
@@ -410,7 +412,10 @@ public class Diff {
 				}
 			}
 			if (!layer.isEmpty()) {
-				FileUtils.writeTo(folderName + "/common/" + classPptName, root.toString());
+				FileUtils.writeTo(folderName + "/" + classPptName, root.toString());
+				if(!allFiles.add(classPptName)) {
+					throw new RuntimeException("duplicated file");
+				}
 			}
 		}
 	}
@@ -471,6 +476,9 @@ public class Diff {
 			}
 			if (!layer.isEmpty()) {
 				FileUtils.writeTo(filename + "/" + classPptName, root.toString());
+				if(!allFiles.add(classPptName)) {
+					throw new RuntimeException("duplicated file");
+				}
 			}
 		}
 	}
