@@ -55,7 +55,6 @@ public class App
         	for (Result result : classResultMap.get(className)) {
         		result.appendToJSON(tmp);
         	}
-        	System.out.println(tmp.toString());
         }
     }
 }
