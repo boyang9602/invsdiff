@@ -25,5 +25,6 @@ public class App
         		invsFiles.add(new InvsFile(args[j]));
         	}
         }
+        
     }
 }

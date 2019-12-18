@@ -5,7 +5,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,6 +19,19 @@ public class InvsFile {
 	private String filename;
 	private Map<String, ParentPpt> classPptsMap = new HashMap<String, ParentPpt>();
 	private Map<String, ParentPpt> objectPptsMap = new HashMap<String, ParentPpt>();
+
+	public final Set<String> getClassPptKeys() {
+		return new HashSet<String>(classPptsMap.keySet());
+	}
+	public final Set<String> getObjectPptKeys() {
+		return new HashSet<String>(objectPptsMap.keySet());
+	}
+	public final ParentPpt getClassPpt(String name) {
+		return this.classPptsMap.get(name);
+	}
+	public final ParentPpt getObjectPpt(String name) {
+		return this.getObjectPpt(name);
+	}
 
 	public final String getFilename() {
 		return filename.substring(filename.lastIndexOf('/') + 1);
