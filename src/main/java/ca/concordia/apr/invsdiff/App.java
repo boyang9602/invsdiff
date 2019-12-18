@@ -1,7 +1,9 @@
 package ca.concordia.apr.invsdiff;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,8 +37,12 @@ public class App
         	}
         }
         Set<String> allPpts = new HashSet<String>();
+
+        int index = 0;
+    	String[] filenames = new String[invsFiles.size()];
         for (InvsFile invsFile : invsFiles) {
         	allPpts.addAll(invsFile.getPptNamesSet());
+        	filenames[index++] = invsFile.getFilename();
         }
         Map<String, Set<Result>> classResultMap = new HashMap<String, Set<Result>>();
         for (String pptName : allPpts) {
@@ -50,11 +56,30 @@ public class App
         	classResultMap.put(result.getClassName(), resultSet);
         }
 
+        File file = new File("diff-summary-" + String.join("-", filenames) + ".csv");
+        PrintWriter pw = new PrintWriter(file);
+        StringBuffer title = new StringBuffer();
+        title.append("ppt,common,");
+        for (String filename : filenames) {
+        	title.append(filename).append(',');
+        }
+        title.setCharAt(title.length() - 1, '\n');
+        pw.write(title.toString());
         for (String className : classResultMap.keySet()) {
-        	JSONObject tmp = new JSONObject();
+//        	JSONObject tmp = new JSONObject();
+//        	for (Result result : classResultMap.get(className)) {
+//        		result.appendToJSON(tmp);
+//        	}
         	for (Result result : classResultMap.get(className)) {
-        		result.appendToJSON(tmp);
+        		StringBuffer sb = new StringBuffer();
+        		sb.append('\"').append(result.getPptName()).append('\"').append(',');
+        		for (Integer ele : result.getSummary(filenames)) {
+        			sb.append(ele).append(',');
+        		}
+        		sb.setCharAt(sb.length() - 1, '\n');
+        		pw.write(sb.toString());
         	}
         }
+        pw.close();
     }
 }

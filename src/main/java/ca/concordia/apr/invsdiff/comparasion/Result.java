@@ -31,30 +31,23 @@ public class Result {
 	public String getClassName() {
 		return m.group(1);
 	}
+	public final String getPptName() {
+		return pptName;
+	}
+
+	public Integer[] getSummary(String[] filenames) {
+		Integer[] result = new Integer[filenames.length + 1];
+		for (int i = 1; i <= filenames.length; i++) {
+			Set<String> dist = distinctMap.get(filenames[i - 1]);
+			if (dist != null) {
+				result[i] = dist.size();
+			}
+		}
+		result[0] = common == null ? null : common.size();
+		return result;
+	}
+
 	public JSONObject toJSON() {
-//		JSONObject root = new JSONObject();
-//		JSONObject currNode = root;
-//		for (int i = 1; i <= 5; i++) {
-//			if (i == 2) {
-//				continue;
-//			}
-//			String name = m.group(i);
-//			if (name == null) {
-//				continue;
-//			}
-//			if (i == 3 && name.equals("EXIT") && m.group(4) != null) {
-//				name = "EXITNN";
-//			}
-//			
-//			JSONObject tmp = new JSONObject();
-//			currNode.append(name, tmp);
-//			currNode = tmp;
-//		}
-//		currNode.append("common", this.common);
-//		for (String key : distinctMap.keySet()) {
-//			currNode.append(key, distinctMap.get(key));
-//		}
-//		return root;
 		return appendToJSON(new JSONObject());
 	}
 
