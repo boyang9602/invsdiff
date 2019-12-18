@@ -19,6 +19,7 @@ public class InvsFile {
 	private String filename;
 	private Map<String, ParentPpt> classPptsMap = new HashMap<String, ParentPpt>();
 	private Map<String, ParentPpt> objectPptsMap = new HashMap<String, ParentPpt>();
+	private Map<String, OrphanPpt> orphanPptsMap = new HashMap<String, OrphanPpt>();
 
 	public final Set<String> getClassPptKeys() {
 		return new HashSet<String>(classPptsMap.keySet());
@@ -78,17 +79,22 @@ public class InvsFile {
 				if (parent == null) {
 					parent = this.objectPptsMap.get(names[0]);
 				}
-				if (type.equals("EXIT")) {
-					if (m.group(3) != null) {
-						int exitPoint = Integer.parseInt(m.group(3));
-						ppt = new ExitnnPpt(parent, names[1], exitPoint, condition);
+				if (parent != null) {
+					if (type.equals("EXIT")) {
+						if (m.group(3) != null) {
+							int exitPoint = Integer.parseInt(m.group(3));
+							ppt = new ExitnnPpt(parent, names[1], exitPoint, condition);
+						} else {
+							ppt = new ExitPpt(parent, names[1], condition);
+						}
+					} else if (type.equals("ENTER") ) {
+						ppt = new EnterPpt(parent, names[1], condition);
 					} else {
-						ppt = new ExitPpt(parent, names[1], condition);
+						throw new RuntimeException("unexpected ppt: " + rawName);
 					}
-				} else if (type.equals("ENTER") ) {
-					ppt = new EnterPpt(parent, names[1], condition);
 				} else {
-					throw new RuntimeException("unexpected ppt: " + rawName);
+					ppt = new OrphanPpt(name, type, condition);
+					orphanPptsMap.put(rawName, (OrphanPpt) ppt);
 				}
 			}
 		}

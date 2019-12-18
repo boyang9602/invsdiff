@@ -11,24 +11,31 @@ import ca.concordia.apr.invsdiff.ppt.*;
 
 public class Comparator {
 	public static Map<String, Map<String, Result>> compareInvsFile(InvsFile...invsFiles) {
-		Set<String> finished = new TreeSet<String>();
+		Set<String> finishedClassPpt = new TreeSet<String>();
+		Set<String> finishedObjectPpt = new TreeSet<String>();
 		Map<String, Map<String, Result>> classPptResultMap = new HashMap<String, Map<String, Result>>();
 		for (int i = 0; i < invsFiles.length; i++) {
 			for (String name : invsFiles[i].getClassPptKeys()) {
+				if (finishedClassPpt.contains(name)) {
+					continue;
+				}
 				ParentPpt[] ppts = new ParentPpt[invsFiles.length];
 				for (int j = 0; j < ppts.length; j++) {
 					ppts[j] = invsFiles[i].getClassPpt(name);
 				}
 				classPptResultMap.put(name, compareParent(ppts));
-				finished.add(name);
+				finishedClassPpt.add(name);
 			}
 			for (String name : invsFiles[i].getObjectPptKeys()) {
+				if (finishedObjectPpt.contains(name)) {
+					continue;
+				}
 				ParentPpt[] ppts = new ParentPpt[invsFiles.length];
 				for (int j = 0; j < ppts.length; j++) {
 					ppts[j] = invsFiles[i].getObjectPpt(name);
 				}
 				classPptResultMap.put(name, compareParent(ppts));
-				finished.add(name);
+				finishedObjectPpt.add(name);
 			}
 		}
 		return classPptResultMap;
