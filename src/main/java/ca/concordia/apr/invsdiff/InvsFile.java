@@ -5,40 +5,19 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class InvsFile {
 	private String filename;
-	private Map<String, Ppt> classPpts = new HashMap<String, Ppt>();
-	private Map<String, Ppt> objectPpts = new HashMap<String, Ppt>();
-	private Map<String, Map<String, Ppt>> enterPpts = new HashMap<String, Map<String, Ppt>>();
-	private Map<String, Map<String, List<Ppt>>> exitPpts = new HashMap<String, Map<String, List<Ppt>>>();
-	private Map<String, Map<String, List<Ppt>>> exitnnPpts = new HashMap<String, Map<String, List<Ppt>>>();
-
-	public final Map<String, Ppt> getClassPpts() {
-		return classPpts;
-	}
-
-	public final Map<String, Ppt> getObjectPpts() {
-		return objectPpts;
-	}
-
-	public final Map<String, Map<String, Ppt>> getEnterPpts() {
-		return enterPpts;
-	}
-
-	public final Map<String, Map<String, List<Ppt>>> getExitPpts() {
-		return exitPpts;
-	}
-
-	public final Map<String, Map<String, List<Ppt>>> getExitnnPpts() {
-		return exitnnPpts;
-	}
+	private Map<String, Ppt> pptMap = new HashMap<String, Ppt>();
 
 	public final String getFilename() {
 		return filename.substring(filename.lastIndexOf('/') + 1);
+	}
+	
+	public final Set<String> getPptNamesSet() {
+		return pptMap.keySet();
 	}
 
 	public InvsFile(String filename) throws FileNotFoundException, IOException {
@@ -53,68 +32,17 @@ public class InvsFile {
 		Ppt currPpt = null;
 		while (line != null) {
 			if (line.matches("^=+$")) {
-				if (currPpt != null) {
-					addCurrPpt(currPpt);
-				}
-				currPpt = new Ppt();
-				line = br.readLine();
-				currPpt.setRawName(line);
+				currPpt = new Ppt(br.readLine());
+				pptMap.put(currPpt.getRawName(), currPpt);
 			} else {
 				currPpt.addInv(line);
 			}
 			line = br.readLine();
 		}
-		addCurrPpt(currPpt);
 		br.close();
-		if (!exitPpts.keySet().containsAll(exitnnPpts.keySet())) {
-			throw new RuntimeException("unmatched exit and exitnn");
-		}
 	}
 
-	private void addCurrPpt(Ppt currPpt) {
-		switch (currPpt.getType()) {
-		case CLASS:
-			this.classPpts.put(currPpt.getName(), currPpt);
-			break;
-		case OBJECT:
-			this.objectPpts.put(currPpt.getName(), currPpt);
-			break;
-		case ENTER:
-			Map<String, Ppt> methodEnterPptMap = this.enterPpts.get(currPpt.getClassName());
-			if (methodEnterPptMap == null) {
-				methodEnterPptMap = new HashMap<String, Ppt>();
-				this.enterPpts.put(currPpt.getClassName(), methodEnterPptMap);
-			}
-			methodEnterPptMap.put(currPpt.getMethodName(), currPpt);
-			break;
-		case EXIT:
-			Map<String, List<Ppt>> methodExitPptMap = this.exitPpts.get(currPpt.getClassName());
-			if (methodExitPptMap == null) {
-				methodExitPptMap = new HashMap<String, List<Ppt>>();
-				this.exitPpts.put(currPpt.getClassName(), methodExitPptMap);
-			}
-			String methodName = currPpt.getMethodName();
-			List<Ppt> exitPptsList = methodExitPptMap.get(methodName);
-			if (exitPptsList == null) {
-				exitPptsList = new LinkedList<Ppt>();
-				methodExitPptMap.put(methodName, exitPptsList);
-			}
-			exitPptsList.add(currPpt);
-			break;
-		case EXITNN:						
-			Map<String, List<Ppt>> ennPptsMap = this.exitnnPpts.get(currPpt.getClassName());
-			if (ennPptsMap == null) {
-				ennPptsMap = new HashMap<String, List<Ppt>>();
-				this.exitnnPpts.put(currPpt.getClassName(), ennPptsMap);
-			}
-			methodName = currPpt.getMethodName();
-			List<Ppt> ennPptsList = ennPptsMap.get(methodName);
-			if (ennPptsList == null) {
-				ennPptsList = new LinkedList<Ppt>();
-				ennPptsMap.put(methodName, ennPptsList);
-			}
-			ennPptsList.add(currPpt);
-			break;
-		}
+	public Ppt getPptByName(String pptName) {
+		return this.pptMap.get(pptName);
 	}
 }
